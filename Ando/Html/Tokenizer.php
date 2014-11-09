@@ -1,4 +1,17 @@
 <?php
+$path = dirname( dirname( dirname( __FILE__ ) ) );
+require $path
+        . DIRECTORY_SEPARATOR . 'Ando'
+        . DIRECTORY_SEPARATOR . 'Regex.php';
+require $path
+        . DIRECTORY_SEPARATOR . 'Ando'
+        . DIRECTORY_SEPARATOR . 'Html'
+        . DIRECTORY_SEPARATOR . 'Token.php';
+require $path
+        . DIRECTORY_SEPARATOR . 'Ando'
+        . DIRECTORY_SEPARATOR . 'Html'
+        . DIRECTORY_SEPARATOR . 'Spec.php';
+
 /**
  * Basic HTML Tokenizer
  *
@@ -10,18 +23,21 @@ class Ando_HTml_Tokenizer
 {
 
     /**
+     * HTML to tokenize.
      *
      * @var array
      */
     protected $html;
 
     /**
+     * Tokens resulting from tokenizing.
      *
      * @var array
      */
     protected $tokens;
 
     /**
+     * Get the tokens.
      *
      * @return array
      */
@@ -31,35 +47,39 @@ class Ando_HTml_Tokenizer
     }
 
     /**
+     * Classify and store matched stuff as a token.
      *
      * @param array $matches
      */
     public function tokens_add ($matches)
     {
+        $all = 0;
+        $source = 0;
+        $offset = 1;
         switch (true)
         {
-            case $matches['comment'][1] > -1:
+            case $matches['comment'][$offset] > -1:
                 $type = Ando_Html_Token::TYPE_COMMENT;
             break;
-            case $matches['doctype'][1] > -1:
+            case $matches['doctype'][$offset] > -1:
                 $type = Ando_Html_Token::TYPE_DOCTYPE;
             break;
-            case $matches['void'][1] > -1:
+            case $matches['void'][$offset] > -1:
                 $type = Ando_Html_Token::TYPE_VOID;
             break;
-            case $matches['script'][1] > -1:
+            case $matches['script'][$offset] > -1:
                 $type = Ando_Html_Token::TYPE_SCRIPT;
             break;
-            case $matches['start'][1] > -1:
+            case $matches['start'][$offset] > -1:
                 $type = Ando_Html_Token::TYPE_START;
             break;
-            case $matches['end'][1] > -1:
+            case $matches['end'][$offset] > -1:
                 $type = Ando_Html_Token::TYPE_END;
             break;
-            case $matches['iews'][1] > -1:
+            case $matches['iews'][$offset] > -1:
                 $type = Ando_Html_Token::TYPE_IEWS;
             break;
-            case $matches['text'][1] > -1:
+            case $matches['text'][$offset] > -1:
                 $type = Ando_Html_Token::TYPE_TEXT;
             break;
             default:
@@ -70,14 +90,14 @@ class Ando_HTml_Tokenizer
         $index = count($this->tokens);
         $data = array(
             'index' => $index,
-            'source' => $matches[0][0],
-            'offset' => $matches[0][1],
-            'length' => strlen($matches[0][0]),
+            'source' => $matches[$all][$source],
+            'offset' => $matches[$all][$offset],
+            'length' => strlen($matches[$all][$source]),
             'type' => $type
         );
-        if ('' != $matches['tag'][0])
+        if (isset($matches['tag']))
         {
-            $data['tag'] = $matches['tag'][0];
+            $data['tag'] = $matches['tag'][$source];
             if ($type == Ando_Html_Token::TYPE_START && Ando_Html_Spec::is_void_but_looks_like_a_start($data['tag']))
             {
                 $data['type'] = Ando_Html_Token::TYPE_VOID;
@@ -87,7 +107,7 @@ class Ando_HTml_Tokenizer
     }
 
     /**
-     * Split HTML into bits of text and tags.
+     * Split html into bits of text and tags.
      *
      * @param string $html
      */
@@ -115,7 +135,7 @@ class Ando_HTml_Tokenizer
                     'end' => '</(?<tag>\w+)\s*>',
 
                     // capture inter element white space
-                    // note that this white space is "inter element" due to how we match (tag / not-tag)
+                    // note that this white space is surely "inter element" due to how we match (tag / non-tag)
                     'iews' => '\s+',
 
                     // capture anything else as text
@@ -129,12 +149,23 @@ class Ando_HTml_Tokenizer
         ), $this->html);
     }
 
+    /**
+     * Constuctor.
+     *
+     * @param string $html
+     */
     protected function __construct ($html)
     {
         $this->html = $html;
         $this->tokens = array();
     }
 
+    /**
+     * Get the tokens of the html.
+     *
+     * @param string $html
+     * @return array
+     */
     static public function tokenize ($html)
     {
         $tokenizer = new self($html);
@@ -143,32 +174,3 @@ class Ando_HTml_Tokenizer
     }
 
 }
-
-$html = <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-<title>Title of the document</title>
-</head>
-
-<body>
-The content of the document......
-<!--
-<div class="demo" style="zoom: 1; border: none; position: relative;"><div class="jquery-corner" style="position: relative; margin: -20px -20px 10px;"><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 10px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 10px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 10px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 10px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 9px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 9px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 8px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 7px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 6px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 4px; background-color: transparent;"></div></div><h1>Bite</h1>  <code><p>$(this).corner("bite");</p></code><div class="jquery-corner" style="position: absolute; margin: 0px; padding: 0px; left: 0px; bottom: 0px; width: 100%;"><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 4px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 6px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 7px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 8px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 9px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 9px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 10px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 10px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 10px; background-color: transparent;"></div><div style="overflow: hidden; height: 1px; min-height: 1px; font-size: 1px; border-style: none solid; border-color: rgb(255, 255, 255); border-width: 0px 10px; background-color: transparent;"></div></div></div>
--->
-
-<p id="demo"></p>
-
-<script>
-var b = "<b>hey</b>";
-document.getElementById("demo").innerHTML = "Hello --> JavaScript!";
-</script>
-
-</body>
-
-</html>
-HTML;
-
-$result = Ando_HTml_Tokenizer::tokenize($html);
-
-print_r($result);

@@ -1,13 +1,13 @@
 <?php
 $path = dirname( dirname( dirname( __FILE__ ) ) );
-require $path
+require_once $path
         . DIRECTORY_SEPARATOR . 'Ando'
         . DIRECTORY_SEPARATOR . 'Regex.php';
-require $path
+require_once $path
         . DIRECTORY_SEPARATOR . 'Ando'
         . DIRECTORY_SEPARATOR . 'Html'
         . DIRECTORY_SEPARATOR . 'Token.php';
-require $path
+require_once $path
         . DIRECTORY_SEPARATOR . 'Ando'
         . DIRECTORY_SEPARATOR . 'Html'
         . DIRECTORY_SEPARATOR . 'Spec.php';

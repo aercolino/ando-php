@@ -108,8 +108,6 @@ class Ando_HTml_Tokenizer
 
     /**
      * Split html into bits of text and tags.
-     *
-     * @param string $html
      */
     protected function find_tokens ()
     {
@@ -141,7 +139,7 @@ class Ando_HTml_Tokenizer
                     // capture anything else as text
                     'text' => '(?:(?!<!--|<!doctype\b|<\w|</\w).)+'
                 )
-                );
+            );
         // use Ando_Regex::replace to scan $this->html
         Ando_Regex::replace($regex, array(
             $this,
@@ -150,7 +148,7 @@ class Ando_HTml_Tokenizer
     }
 
     /**
-     * Constuctor.
+     * Constructor.
      *
      * @param string $html
      */

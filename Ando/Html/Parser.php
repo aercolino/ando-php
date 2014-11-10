@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Basic HTML Parser
  *
@@ -8,201 +9,51 @@
  */
 class Ando_Html_Parser
 {
-
-    const DOCUMENT_INDEX = -1;
-
     /**
+     * HTML source.
      *
      * @var string
      */
     protected $html;
 
     /**
+     * Tokens found in the html.
      *
-     * @var array
+     * @var Ando_Html_Token[]
      */
     protected $tokens;
 
     /**
+     * Nodes found in the html.
      *
-     * @var array
+     * @var Ando_Html_Node[]
      */
-    protected $tree;
+    protected $nodes;
 
     /**
+     * True if the parent needs fixing.
      *
-     * @var array
+     * @param integer $index
+     * @param Ando_Html_Node[] $ancestors
+     * @return bool
      */
-    protected $registry;
-
-    var $t = array(
-        0 => array(
-            self::DOCUMENT_INDEX,
-            array(),
-            array(
-                'html'
-            )
-        ),
-        1 => array(
-            self::DOCUMENT_INDEX,
-            array()
-        ),
-        2 => array(
-            self::DOCUMENT_INDEX,
-            array(),
-            array(),
-            array(
-                3,
-                4,
-                11,
-                12,
-                17
-            ),
-            array(
-                5,
-                6,
-                9,
-                7,
-                13,
-                14,
-                15
-            )
-        ),
-        3 => array(
-            2,
-            array(
-                self::DOCUMENT_INDEX
-            )
-        ),
-        4 => array(
-            2,
-            array(
-                self::DOCUMENT_INDEX
-            ),
-            array(),
-            array(
-                5,
-                6,
-                9
-            ),
-            array(
-                7
-            )
-        ),
-        5 => array(
-            4,
-            array(
-                2,
-                self::DOCUMENT_INDEX
-            )
-        ),
-        6 => array(
-            4,
-            array(
-                2,
-                self::DOCUMENT_INDEX
-            ),
-            array(),
-            array(
-                7
-            ),
-            array()
-        ),
-        7 => array(
-            6,
-            array(
-                4,
-                2,
-                self::DOCUMENT_INDEX
-            )
-        ),
-        9 => array(
-            4,
-            array(
-                2,
-                self::DOCUMENT_INDEX
-            )
-        ),
-        11 => array(
-            2,
-            array(
-                self::DOCUMENT_INDEX
-            )
-        ),
-        12 => array(
-            2,
-            array(
-                self::DOCUMENT_INDEX
-            ),
-            array(),
-            array(
-                13,
-                14,
-                15
-            ),
-            array()
-        ),
-        13 => array(
-            12,
-            array(
-                2,
-                self::DOCUMENT_INDEX
-            )
-        ),
-        14 => array(
-            12,
-            array(
-                2,
-                self::DOCUMENT_INDEX
-            )
-        ),
-        15 => array(
-            12,
-            array(
-                2,
-                self::DOCUMENT_INDEX
-            )
-        ),
-        17 => array(
-            2,
-            array(
-                self::DOCUMENT_INDEX
-            )
-        )
-    );
-
-
-    // reading the tokens one by one, the above tree can be built in one pass
-    // all tokens but the closing tags create a node
-    // an opening tag implies a push
-    // a closing tag implies a pop
-    // the parent is the top of the stack before pushing the current element (if a push is implied)
-    // each node, after determining its parent, must be added as a child to it,
-    // and as another descendant to each of its other ancestors
-    // when the stack is empty the parent is self::DOCUMENT_INDEX, which means the document
-    // the format for non void elements is: parent, other ancestors, attributes, children, other descendants
-    // the format for void elements is: parent, other ancestors, attributes array
-    // the format for texts and comments is: parent, other ancestors
-    // all elements can have attributes, inluding br, e.g. style="display: none;"
-
-    // the tree could also be easily integrated into the list of tokens by adding new keys.
-
-    protected function must_fix_parent ($index, $ancestors)
+    protected function must_fix_parent($index, $ancestors)
     {
-        $parent = $ancestors[count($ancestors) - 1];
-        if ($parent['index'] == self::DOCUMENT_INDEX)
-        {
+        /**
+         * @var Ando_Html_Node $parent
+         */
+        $parent = count($ancestors) ? $ancestors[count($ancestors) - 1] : null;
+        if (is_null($parent)) {
             return false;
         }
-
-        if ($parent['name'] == $child['name'])
-        {
-            if ($child['name'] == 'div' || $child['name'] == 'span')
-            {
-                return false;
-            }
-            else
-            {
+        if ($parent->is_root()) {
+            return false;
+        }
+        $current_tag = $this->tokens[$index]->tag();
+        if ($parent->name() == $current_tag) {
+            if ($current_tag == 'div' || $current_tag == 'span') {
+                return false;  // div and span can contain themselves
+            } else {
                 return true;
             }
         }
@@ -212,47 +63,37 @@ class Ando_Html_Parser
         return true;
     }
 
-    protected function fix_parent ($index, $ancestors)
+    /**
+     * Fix html tokens somehow (hopefully in a smart way).
+     *
+     * For example, if a DIV is found inside a P, this code
+     * would close that P before processing this DIV.
+     *
+     * @param integer $index
+     * @param Ando_Html_Node[] $ancestors
+     * @return Ando_Html_Node[]
+     */
+    protected function fix_parent($index, $ancestors)
     {
-        if (!$this->must_fix_parent($index, $ancestors))
-        {
+        if (!$this->must_fix_parent($index, $ancestors)) {
             return $ancestors;
         }
-
-
     }
 
-    protected function register ($key, $value)
-    {
-        $this->registry[$key][] = $value;
-    }
-
-    protected function add_descendant ($node)
-    {
-        $parent = $this->tree[$index]['parent']['index'];
-        $this->tree[$parent]['children'][] = $item;
-
-        $ancestors = $this->tree[$index]['ancestors'];
-        foreach ($ancestors as $ancestor)
-        {
-            $this->tree[$ancestor]['descendants'][] = $item;
-        }
-    }
-
-    protected function make_tree ()
+    /**
+     * Build nodes from tokens.
+     */
+    protected function make_nodes()
     {
         $ancestors = array();
-        foreach ($this->tokens as $index => $token)
-        {
+        foreach ($this->tokens as $index => $token) {
             /**
              * @var Ando_Html_Token $token
              */
-            switch ($token->type())
-            {
+            switch ($token->type()) {
 
                 case Ando_Html_Token::TYPE_START:
-                    $ancestors = $this->fix_parent($index, $ancestors); // like P still open before opening DIV or BR always
-
+                    $ancestors = $this->fix_parent($index, $ancestors); // like P still open before opening DIV
                     $parent = count($ancestors) ? $ancestors[count($ancestors) - 1] : null;
                     /**
                      * @var Ando_Html_Node $parent
@@ -267,22 +108,21 @@ class Ando_Html_Parser
                         'descendants' => array()
                     );
                     $node = new Ando_Html_Node($data);
-                    $this->tree[$index] = $node;
+                    $this->nodes[$index] = $node;
                     $node->link_from_ancestors();
-                    $this->register($node->name(), $node);
+                    $this->register($node);
                     array_push($ancestors, $node);
-                break;
+                    break;
 
                 case Ando_Html_Token::TYPE_END:
                     $parent = count($ancestors) ? $ancestors[count($ancestors) - 1] : null;
                     /**
                      * @var Ando_Html_Node $parent
                      */
-                    if (!is_null($parent) && $this->parent->name() == $token->tag())
-                    {
+                    if (!is_null($parent) && $this->parent->name() == $token->tag()) {
                         array_pop($ancestors);
                     }
-                break;
+                    break;
 
                 case Ando_Html_Token::TYPE_VOID:
                     $parent = count($ancestors) ? $ancestors[count($ancestors) - 1] : null;
@@ -297,10 +137,10 @@ class Ando_Html_Parser
                         'attributes' => $this->parse_attributes($token->source())
                     );
                     $node = new Ando_Html_Node($data);
-                    $this->tree[$index] = $node;
+                    $this->nodes[$index] = $node;
                     $node->link_from_ancestors();
-                    $this->register($node->name(), $node);
-                break;
+                    $this->register($node);
+                    break;
 
                 case Ando_Html_Token::TYPE_TEXT:
                 case Ando_Html_Token::TYPE_COMMENT:
@@ -316,81 +156,151 @@ class Ando_Html_Parser
                         'content' => $token->source()
                     );
                     $node = new Ando_Html_Node($data);
-                    $this->tree[$index] = $node;
+                    $this->nodes[$index] = $node;
                     $node->link_from_ancestors();
-                    $this->register($node->name(), $node);
-                break;
+                    $this->register($node);
+                    break;
 
                 case Ando_Html_Token::TYPE_DOCTYPE:
 
-                // TODO: add a doctype attribute for saving the doctype
-                break;
+                    // TODO: add a doctype attribute for saving the doctype
+                    break;
 
                 case Ando_Html_Token::TYPE_IEWS:
                 default:
 
-                // ignore
-                break;
+                    // ignore
+                    break;
             }
         }
     }
 
+    /**
+     * Dictionary for HTML elements, #ids, .classes, data-attributes and all other [attributes].
+     *
+     * @var array
+     */
+    protected $registry;
 
-    var $elements = array(
-        'html' => 2,
-        'head' => 4,
-        'title' => 6,
-        'body' => 12
-    );
-
-    // this is to later find elements in a snap
-    // it is built during the same pass as the tree
-    // when elements are repeated, like div, the value becomes an array
-
-    // this and the other arrays could be integrated int the registry
-
-
-    var $ids = array(); // same as $elements, but or ids
-
-    // integrated into the registry, the keys would be like '#key'
-
-
-    var $classes = array(); // same as $elements, but or classes
-
-    // integrated into the registry, the keys would be like '.key'
-
-
-    var $data = array(); // same as $elements, but or data
-
-    // integrated into the registry, the keys would be like 'data-key'
-
-
-    var $attributes = array(); // same as $elements, but or attributes
-
-    // integrated into the registry, the keys would be like '[key]'
-
-
-
-    // to find all divs of a certain class in a given context
-                               // - take all divs
-                               // - intersect with all elements of that class
-                               // - intersect with all elements of that context
-                               // all elements in a context are all of its descendants (children + other descendants)
-
-    protected function key ()
+    /**
+     * Add and entry to the registry.
+     *
+     * @param string $key
+     * @param Ando_Html_Node $value
+     */
+    protected function registry_add($key, $value)
     {
-
+        $this->registry[$key][] = $value;
     }
 
-    public function __construct ($html)
+    /**
+     * Add every piece of a node to the registry.
+     *
+     * @param Ando_Html_Node $node
+     */
+    protected function register($node) {
+        $this->registry_add($node->name(), $node);
+        $attributes = $node->attributes();
+        if (count($attributes)) {
+            foreach ($attributes as $name => $value) {
+                switch (true) {
+                    case 0 === strpos($name, 'data-'):
+                        $this->registry_add($name, $node);
+                        break;
+                    case 'id' === $name:
+                        $this->registry_add("#$value", $node);
+                        break;
+                    case 'class' === $name:
+                        $classes = explode(' ', $value);
+                        foreach ($classes as $class) {
+                            $this->registry_add(".$class", $node);
+                        }
+                        break;
+                    default:
+                        $this->registry_add("[$name]", $node);
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the registry.
+     *
+     * We allow direct access to the registry, so that complex operations
+     * are easy to implement from client code. (in any case, easier than
+     * foreseeing what would be needed and implement that from here.)
+     *
+     * For example, lets say that client code needs to find all divs of a
+     * certain class in a given context. Let's say the context is just a
+     * node. Then the solution would be an intersection like this:
+     * <code>
+     *   $divs = array_intersect($registry['div'], $registry['.class'],
+     *       node->descendants());
+     * </code>
+     *
+     * @return array
+     */
+    public function registry() {
+        return $this->registry;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param $html
+     */
+    public function __construct($html)
     {
         $this->html = $html;
         $this->tokens = Ando_Html_Tokenizer::tokenize($html);
+        $this->make_nodes();
     }
 
-    public function parse ()
+    /**
+     * Parse html.
+     *
+     * @param string $html
+     * @return Ando_Html_Parser
+     */
+    static public function parse($html)
     {
-        $this->tree = $this->make_tree();
+        $instance = new self($html);
+        return $instance;
+    }
+
+    /**
+     * Add an attribute to the buffer.
+     *
+     * This is a callback of parse_attributes().
+     *
+     * @param array $buffer
+     * @param array $matches
+     */
+    protected function attribute_add( &$buffer, $matches ) {
+        $buffer[$matches['name']] = $matches['value'];
+    }
+
+    /**
+     * Split html element attributes into an array of names and values.
+     *
+     * @param string $source
+     * @return array
+     */
+    protected function parse_attributes($source)
+    {
+        $result = array();
+        $regex = Ando_Regex::create('(?<name>$name)=(?<value>$value)')->interpolate(
+            array(
+                'name'  => '([\w-]+)\s*',
+                'value' => '\s*"([^"]+)"',
+            )
+        );
+        // use Ando_Regex::replace to scan $source
+        Ando_Regex::replace($regex, Ando_Callable::def(array($this, 'attribute_add'), array(
+            'extra' => array($result),
+        )), $source);
+        return $result;
     }
 
 }

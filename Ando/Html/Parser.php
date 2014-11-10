@@ -75,9 +75,14 @@ class Ando_Html_Parser
      */
     protected function fix_parent($index, $ancestors)
     {
+        $result = $ancestors;
         if (!$this->must_fix_parent($index, $ancestors)) {
-            return $ancestors;
+            return $result;
         }
+
+        // TODO continue developing fix_parent
+
+        return $result;
     }
 
     /**
@@ -162,13 +167,11 @@ class Ando_Html_Parser
                     break;
 
                 case Ando_Html_Token::TYPE_DOCTYPE:
-
                     // TODO: add a doctype attribute for saving the doctype
                     break;
 
                 case Ando_Html_Token::TYPE_IEWS:
                 default:
-
                     // ignore
                     break;
             }

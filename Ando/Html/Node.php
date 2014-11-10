@@ -67,14 +67,14 @@ class Ando_Html_Node
     /**
      * Ancestors of the node, including its parent.
      *
-     * @var array( Ando_Html_Node )
+     * @var Ando_Html_Node[]
      */
     protected $ancestors;
 
     /**
      * Get the ancestors.
      *
-     * @return array( Ando_Html_Node )
+     * @return Ando_Html_Node[]
      */
     public function ancestors ($and_parent = true)
     {
@@ -91,14 +91,14 @@ class Ando_Html_Node
     /**
      * Attributes of the node.
      *
-     * @var array( name => value )
+     * @var array
      */
     protected $attributes;
 
     /**
      * Get the attributes.
      *
-     * @return array( name => value )
+     * @return array
      */
     public function attributes ()
     {
@@ -108,14 +108,14 @@ class Ando_Html_Node
     /**
      * Children of the node.
      *
-     * @var array( Ando_Html_Node )
+     * @var Ando_Html_Node[]
      */
     protected $children;
 
     /**
      * Get the children.
      *
-     * @return array( Ando_Html_Node )
+     * @return Ando_Html_Node[]
      */
     public function children ()
     {
@@ -125,7 +125,7 @@ class Ando_Html_Node
     /**
      * Descendants of the node, including its children.
      *
-     * @var array( Ando_Html_Node )
+     * @var Ando_Html_Node[]
      */
     protected $descendants;
 
@@ -133,7 +133,7 @@ class Ando_Html_Node
      * Get the descendants.
      *
      * @param boolean $and_children
-     * @return array( Ando_Html_Node )
+     * @return Ando_Html_Node[]
      */
     public function descendants ($and_children = true)
     {
@@ -214,7 +214,7 @@ class Ando_Html_Node
      * Get the siblings of this node.
      *
      * @param bool $and_self  True if this node is to be included or not.
-     * @return array
+     * @return Ando_Html_Node[]
      */
     public function siblings ($and_self = false)
     {

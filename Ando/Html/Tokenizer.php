@@ -1,16 +1,4 @@
 <?php
-$path = dirname( dirname( dirname( __FILE__ ) ) );
-require_once $path
-        . DIRECTORY_SEPARATOR . 'Ando'
-        . DIRECTORY_SEPARATOR . 'Regex.php';
-require_once $path
-        . DIRECTORY_SEPARATOR . 'Ando'
-        . DIRECTORY_SEPARATOR . 'Html'
-        . DIRECTORY_SEPARATOR . 'Token.php';
-require_once $path
-        . DIRECTORY_SEPARATOR . 'Ando'
-        . DIRECTORY_SEPARATOR . 'Html'
-        . DIRECTORY_SEPARATOR . 'Spec.php';
 
 /**
  * Basic HTML Tokenizer
@@ -25,21 +13,21 @@ class Ando_HTml_Tokenizer
     /**
      * HTML to tokenize.
      *
-     * @var array
+     * @var string
      */
     protected $html;
 
     /**
-     * Tokens resulting from tokenizing.
+     * Tokens found in the html.
      *
-     * @var array
+     * @var Ando_Html_Token[]
      */
     protected $tokens;
 
     /**
      * Get the tokens.
      *
-     * @return array
+     * @return Ando_Html_Token[]
      */
     protected function tokens ()
     {
@@ -49,6 +37,7 @@ class Ando_HTml_Tokenizer
     /**
      * Classify and store matched stuff as a token.
      *
+     * @throws Ando_Exception
      * @param array $matches
      */
     public function tokens_add ($matches)
@@ -162,7 +151,7 @@ class Ando_HTml_Tokenizer
      * Get the tokens of the html.
      *
      * @param string $html
-     * @return array
+     * @return Ando_Html_Token[]
      */
     static public function tokenize ($html)
     {

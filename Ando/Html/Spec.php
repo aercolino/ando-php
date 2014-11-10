@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Basic HTML Specification
  *
@@ -492,14 +493,14 @@ class Ando_Html_Spec
     /**
      * The instance of this singleton.
      *
-     * @var self
+     * @var Ando_Html_Spec
      */
     protected static $instance;
 
     /**
      * Get the instance.
      *
-     * @return self
+     * @return Ando_Html_Spec
      */
     static public function instance ()
     {
@@ -531,6 +532,7 @@ class Ando_Html_Spec
     /**
      * True if the node has the category.
      *
+     * @throws Ando_Exception
      * @param Ando_Html_Node $node
      * @param string $category
      * @return boolean
@@ -659,7 +661,7 @@ class Ando_Html_Spec
     /**
      * True if an element with that name is void but looks like a start.
      *
-     * @param unknown $name
+     * @param string $name
      * @return boolean
      */
     static public function is_void_but_looks_like_a_start ($name)
@@ -721,6 +723,7 @@ class Ando_Html_Spec
     /**
      * True if node has valid context.
      *
+     * @throws Ando_Exception
      * @param Ando_Html_Node $node
      * @return boolean
      */
@@ -737,6 +740,7 @@ class Ando_Html_Spec
     /**
      * True if the node has valid content.
      *
+     * @throws Ando_Exception
      * @param Ando_Html_Node $node
      * @return boolean
      */

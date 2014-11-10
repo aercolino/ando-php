@@ -28,7 +28,7 @@ class Ando_Html_Token
     /**
      * Get the index.
      *
-     * @return unknown
+     * @return integer
      */
     public function index ()
     {

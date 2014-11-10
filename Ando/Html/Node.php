@@ -10,12 +10,15 @@ class Ando_Html_Node
 {
 
     /**
+     * Index of the node.
+     * If the node comes from a token, it's the same index.
      *
      * @var integer
      */
     protected $index;
 
     /**
+     * Get the index.
      *
      * @return integer
      */
@@ -25,12 +28,17 @@ class Ando_Html_Node
     }
 
     /**
+     * Name of the node.
+     * - For an element other than text and comment, it's the tag name.
+     * - For a text or comment it's TEXT or COMMENT.
+     * - Text which was inter element white space is never a node.
      *
      * @var string
      */
     protected $name;
 
     /**
+     * Get the name.
      *
      * @return string
      */
@@ -40,12 +48,14 @@ class Ando_Html_Node
     }
 
     /**
+     * Parent of the node.
      *
      * @var Ando_Html_Node
      */
     protected $parent;
 
     /**
+     * Get the parent.
      *
      * @return Ando_Html_Node
      */
@@ -55,12 +65,14 @@ class Ando_Html_Node
     }
 
     /**
+     * Ancestors of the node, including its parent.
      *
      * @var array( Ando_Html_Node )
      */
     protected $ancestors;
 
     /**
+     * Get the ancestors.
      *
      * @return array( Ando_Html_Node )
      */
@@ -77,14 +89,16 @@ class Ando_Html_Node
     }
 
     /**
+     * Attributes of the node.
      *
-     * @var array
+     * @var array( name => value )
      */
     protected $attributes;
 
     /**
+     * Get the attributes.
      *
-     * @return array
+     * @return array( name => value )
      */
     public function attributes ()
     {
@@ -92,12 +106,14 @@ class Ando_Html_Node
     }
 
     /**
+     * Children of the node.
      *
      * @var array( Ando_Html_Node )
      */
     protected $children;
 
     /**
+     * Get the children.
      *
      * @return array( Ando_Html_Node )
      */
@@ -107,13 +123,16 @@ class Ando_Html_Node
     }
 
     /**
+     * Descendants of the node, including its children.
      *
      * @var array( Ando_Html_Node )
      */
     protected $descendants;
 
     /**
+     * Get the descendants.
      *
+     * @param boolean $and_children
      * @return array( Ando_Html_Node )
      */
     public function descendants ($and_children = true)
@@ -127,12 +146,14 @@ class Ando_Html_Node
     }
 
     /**
+     * Content of the node, only meaningful if the node is TEXT or COMMENT.
      *
      * @var string
      */
     protected $content;
 
     /**
+     * Get the content.
      *
      * @return string
      */
@@ -141,6 +162,11 @@ class Ando_Html_Node
         return $this->content;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param array $data  An associative array for specifying node properties.
+     */
     public function __construct ($data)
     {
         $this->index = isset($data['index']) ? $data['index'] : null;
@@ -153,21 +179,43 @@ class Ando_Html_Node
         $this->content = isset($data['content']) ? $data['content'] : null;
     }
 
+    /**
+     * True if this node is a root node.
+     *
+     * @return bool
+     */
     public function is_root ()
     {
         return is_null($this->parent);
     }
 
+    /**
+     * True if this node is a leaf node.
+     *
+     * @return bool
+     */
     public function is_leaf ()
     {
         return 0 == count($this->children);
     }
 
+    /**
+     * True if the other node is a sibling of this one.
+     *
+     * @param Ando_Html_Node $other
+     * @return bool
+     */
     public function is_sibling ($other)
     {
         return $other->parent == $this->parent;
     }
 
+    /**
+     * Get the siblings of this node.
+     *
+     * @param bool $and_self  True if this node is to be included or not.
+     * @return array
+     */
     public function siblings ($and_self = false)
     {
         if ($this->is_root())
@@ -184,6 +232,12 @@ class Ando_Html_Node
         return $result;
     }
 
+    /**
+     * Add this node to each of its ancestors, both as a child of its parent
+     * and as a descendant of any ancestor, including its parent.
+     *
+     * @return Ando_Html_Node
+     */
     public function link_from_ancestors ()
     {
         foreach ($this->ancestors as $ancestor)

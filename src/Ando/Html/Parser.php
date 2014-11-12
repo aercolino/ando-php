@@ -88,7 +88,7 @@ class Ando_Html_Parser
     /**
      * Build nodes from tokens.
      */
-    protected function make_nodes()
+    protected function find_nodes()
     {
         $ancestors = array();
         foreach ($this->tokens as $index => $token) {
@@ -256,8 +256,8 @@ class Ando_Html_Parser
     public function __construct($html)
     {
         $this->html = $html;
-        $this->tokens = Ando_Html_Tokenizer::tokenize($html);
-        $this->make_nodes();
+        $this->tokens = array();
+        $this->nodes = array();
     }
 
     /**
@@ -268,8 +268,11 @@ class Ando_Html_Parser
      */
     static public function parse($html)
     {
-        $instance = new self($html);
-        return $instance;
+        $lexer = Ando_Html_Lexer::parse($html);
+        $parser = new self($html);
+        $parser->tokens = $lexer->tokens();
+        $parser->find_nodes();
+        return $parser;
     }
 
     /**

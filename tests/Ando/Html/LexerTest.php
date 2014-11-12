@@ -1,10 +1,6 @@
 <?php
-require dirname( dirname( dirname( dirname( __FILE__ ) ) ) )
-        . DIRECTORY_SEPARATOR . 'Ando'
-        . DIRECTORY_SEPARATOR . 'Html'
-        . DIRECTORY_SEPARATOR . 'Tokenizer.php';
 
-class Ando_TokenizerTest extends PHPUnit_Framework_TestCase {
+class Ando_Html_LexerTest extends PHPUnit_Framework_TestCase {
 
     public function minimal_page() {
         $result = <<<HTML
@@ -48,7 +44,7 @@ HTML;
 
     public function test_minimal_page_has_17_tokens() {
         $html = $this->minimal_page();
-        $tokens = Ando_HTml_Tokenizer::tokenize($html);
+        $tokens = Ando_Html_Lexer::tokenize($html);
         $this->assertEquals(17, count($tokens));
     }
 

@@ -1,17 +1,17 @@
 <?php
 
 /**
- * Basic HTML Tokenizer
+ * Basic HTML Lexer
  *
  * @link http://andowebsit.es/blog/noteslog.com/
  *
  * @package Ando_Html
  */
-class Ando_HTml_Tokenizer
+class Ando_Html_Lexer
 {
 
     /**
-     * HTML to tokenize.
+     * HTML to parse.
      *
      * @var string
      */
@@ -29,7 +29,7 @@ class Ando_HTml_Tokenizer
      *
      * @return Ando_Html_Token[]
      */
-    protected function tokens ()
+    public function tokens ()
     {
         return $this->tokens;
     }
@@ -72,7 +72,7 @@ class Ando_HTml_Tokenizer
                 $type = Ando_Html_Token::TYPE_TEXT;
             break;
             default:
-                throw new Ando_Exception('Invalid tokenizer regex match.');
+                throw new Ando_Exception('Invalid parser regex match.');
         }
 
 
@@ -151,13 +151,13 @@ class Ando_HTml_Tokenizer
      * Get the tokens of the html.
      *
      * @param string $html
-     * @return Ando_Html_Token[]
+     * @return Ando_Html_Lexer
      */
-    static public function tokenize ($html)
+    static public function parse ($html)
     {
-        $tokenizer = new self($html);
-        $tokenizer->find_tokens();
-        return $tokenizer->tokens();
+        $lexer = new self($html);
+        $lexer->find_tokens();
+        return $lexer;
     }
 
 }

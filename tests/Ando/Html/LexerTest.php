@@ -44,7 +44,8 @@ HTML;
 
     public function test_minimal_page_has_17_tokens() {
         $html = $this->minimal_page();
-        $tokens = Ando_Html_Lexer::tokenize($html);
+        $lexer = Ando_Html_Lexer::parse($html);
+        $tokens = $lexer->tokens();
         $this->assertEquals(17, count($tokens));
     }
 

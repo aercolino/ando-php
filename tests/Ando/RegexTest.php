@@ -1,5 +1,4 @@
 <?php
-require dirname( dirname( dirname( __FILE__ ) ) ) . DIRECTORY_SEPARATOR . 'Ando' . DIRECTORY_SEPARATOR . 'Regex.php';
 
 class Ando_RegexTest extends PHPUnit_Framework_TestCase {
 

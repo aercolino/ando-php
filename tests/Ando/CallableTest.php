@@ -1,5 +1,4 @@
 <?php
-require dirname( dirname( dirname( __FILE__ ) ) ) . DIRECTORY_SEPARATOR . 'Ando' . DIRECTORY_SEPARATOR . 'Callable.php';
 
 class Ando_CallableTest extends PHPUnit_Framework_TestCase {
 

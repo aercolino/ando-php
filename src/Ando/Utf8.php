@@ -1,15 +1,11 @@
 <?php
 
-/**
- * Basic UTF-8 support
- *
- * @link http://andowebsit.es/blog/noteslog.com/
- * @link http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
- *
- * @package    Ando_Utf8
- */
 class Ando_Utf8
 {
+
+    /**
+     * @link http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+     */
 
     /**
      * Escape UTF-8 characters using the given options

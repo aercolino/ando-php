@@ -1,16 +1,11 @@
 <?php
 
-/**
- * Basic Regex
- *
- * Compose regular expressions taking care of backreferences.
- *
- * @link http://andowebsit.es/blog/noteslog.com/
- *
- * @package    Ando_Regex
- */
 class Ando_Regex
 {
+
+    /**
+     * Compose regular expressions taking care of backreferences.
+     */
 
     /**
      * We now only allow PCRE, just to be clear...

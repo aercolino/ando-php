@@ -1,11 +1,5 @@
 <?php
-/**
- * Basic Collection
- *
- * @link http://andowebsit.es/blog/noteslog.com/
- *
- * @package    Ando
- */
+
 class Ando_Collection
 {
 

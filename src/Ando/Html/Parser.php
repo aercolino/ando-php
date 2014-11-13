@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Basic HTML Parser
- *
- * @link http://andowebsit.es/blog/noteslog.com/
- *
- * @package Ando_Html
- */
 class Ando_Html_Parser
 {
     /**

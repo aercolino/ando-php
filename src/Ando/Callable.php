@@ -1,20 +1,19 @@
 <?php
 
-/**
- * Basic Callable Proxy.
- *
- * Wrap a PHP callable into Ando_Callable::def to create a proxy object
- * that will call that callable with doctored arguments.
- *
- * If no extra arguments are given, no proxy is created. This means that,
- * even if the effect of the function is null in such a case, it's still a good
- * idea to use Ando_Callable::def for any PHP callback because it allows to more easily
- * tell apart PHP expressions that are used as callbacks from those that are not.
- *
- * @link http://andowebsit.es/blog/noteslog.com/
- */
 class Ando_Callable
 {
+
+    /**
+     * Basic Callable Proxy.
+     *
+     * Wrap a PHP callable into Ando_Callable::def to create a proxy object
+     * that will call that callable with doctored arguments.
+     *
+     * If no extra arguments are given, no proxy is created. This means that,
+     * even if the effect of the function is null in such a case, it's still a good
+     * idea to use Ando_Callable::def for any PHP callback because it allows to more easily
+     * tell apart PHP expressions that are used as callbacks from those that are not.
+     */
 
     /**
      * Callable expression.

@@ -1,3 +1,5 @@
 .vagrant
 puphpet/
 Vagrantfile
+vendor/
+composer.lock

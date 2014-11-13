@@ -296,7 +296,7 @@ class Ando_Html_Parser
             )
         );
         // use Ando_Regex::replace to scan $source
-        Ando_Regex::replace($regex, Ando_Callable::def(array($this, 'attribute_add'), array(
+        Ando_Regex::replace($regex, Ando_StarFunc::def(array($this, 'attribute_add'), array(
             'extra' => array($result),
         )), $source);
         return $result;

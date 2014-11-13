@@ -8,18 +8,18 @@ class Ando_CallableTest extends PHPUnit_Framework_TestCase {
     }
 
     public function test_no_proxy_used_for_no_options() {
-        $cb = Ando_Callable::def( array( $this, 'cb_one' ) );
+        $cb = Ando_StarFunc::def( array( $this, 'cb_one' ) );
         $this->assertTrue( is_callable( $cb ) );
 
         $this->assertEquals( array( $this, 'cb_one' ), $cb );
     }
 
     public function test_proxy_used_for_options_even_just_a_null() {
-        $cb = Ando_Callable::def( array($this, 'cb_one'), array( null ) );
+        $cb = Ando_StarFunc::def( array($this, 'cb_one'), array( null ) );
         $this->assertTrue(is_callable($cb));
 
         list( $object, $method ) = $cb;
-        $this->assertInstanceOf( 'Ando_Callable', $object );
+        $this->assertInstanceOf( 'Ando_StarFunc', $object );
         $this->assertEquals( 'run', $method );
     }
 
@@ -30,11 +30,11 @@ class Ando_CallableTest extends PHPUnit_Framework_TestCase {
     }
 
     public function test_proxy_used_for_options() {
-        $cb = Ando_Callable::def( array( $this, 'cb_two' ), array( 'extra' => array( 'hey' ) ) );
+        $cb = Ando_StarFunc::def( array( $this, 'cb_two' ), array( 'extra' => array( 'hey' ) ) );
         $this->assertTrue( is_callable( $cb ) );
 
         list( $object, $method ) = $cb;
-        $this->assertInstanceOf( 'Ando_Callable', $object );
+        $this->assertInstanceOf( 'Ando_StarFunc', $object );
         $this->assertEquals( 'run', $method );
 
         $result = call_user_func( $cb, 'there' );
@@ -42,7 +42,7 @@ class Ando_CallableTest extends PHPUnit_Framework_TestCase {
     }
 
     public function test_all_built_in_pieces() {
-        $f = new Ando_Callable( null );
+        $f = new Ando_StarFunc( null );
         $f->setCallback( array( $this, 'cb_two' ) );
         $f->setOptions( array( 'extra' => array( 'hey' ) ) );
         $f->setOptions( array( 'order' => '1' ) );
@@ -50,7 +50,7 @@ class Ando_CallableTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue( is_callable( $cb ) );
 
         list( $object, $method ) = $cb;
-        $this->assertInstanceOf( 'Ando_Callable', $object );
+        $this->assertInstanceOf( 'Ando_StarFunc', $object );
         $this->assertEquals( 'run', $method );
 
         $result = call_user_func( $cb, 'there' );
@@ -71,7 +71,7 @@ class Ando_CallableTest extends PHPUnit_Framework_TestCase {
     }
 
     public function test_extra_splat_remove_order() {
-        $callable = Ando_Callable::def( array( $this, 'compress_word' ), array(
+        $callable = Ando_StarFunc::def( array( $this, 'compress_word' ), array(
             'extra'  => array(3),   // this is the item at index 0 which 'order' refers to
             'splat'  => true,
             'remove' => '0',        // these are indexes into run-time arguments (the 0 here is unrelated to the next)
@@ -82,7 +82,7 @@ class Ando_CallableTest extends PHPUnit_Framework_TestCase {
     }
 
     public function test_extra_splat_retain_order() {
-        $callable = Ando_Callable::def( array( $this, 'compress_word' ), array(
+        $callable = Ando_StarFunc::def( array( $this, 'compress_word' ), array(
             'extra'  => array(3),   // this is the item at index 0 which 'order' refers to
             'splat'  => true,
             'retain' => '1-',       // these are indexes into run-time arguments (the 0 here is unrelated to the next)

@@ -1,6 +1,6 @@
 <?php
 
-class Ando_CallableTest extends PHPUnit_Framework_TestCase {
+class Ando_StarFuncTest extends PHPUnit_Framework_TestCase {
 
     // callback
     public function cb_one( $first ) {

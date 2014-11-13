@@ -1,0 +1,23 @@
+{
+    "name": "aercolino/ando-php",
+    "description": "A collection of PHP 5.2.4+ classes for web projects.",
+    "keywords": ["framework"],
+    "homepage": "https://github.com/aercolino/ando-php",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andrea Ercolino",
+            "email": "aercolino@yahoo.com",
+            "homepage": "http://andowebsit.es/blog/noteslog.com",
+            "role": "Developer"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "4.3.*",
+        "phpunit/php-invoker": "*",
+        "phpunit/dbunit": ">=1.2"
+    },
+    "autoload": {
+        "psr-0": { "Ando_": "src/" }
+    }
+}

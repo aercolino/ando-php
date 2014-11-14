@@ -25,21 +25,21 @@ class Ando_StarFunc
     /**
      * Options.
      *
-     * 'extra' => array Additional arguments to pass to the callback.
-     * 'splat' => true|false True means the run-time arguments are flattened.
-     * 'order' => string Permutation (it allows for repetitions and/or omissions)
-     * of prepared + run-time arguments. Format:
-     * - '1' <-- Place at 0 what is at 1
-     * - '0 2 4' <-- Place at 0 what is at 0, at 1 what is at 2, at 2 what is at 4.
-     * Notice that if you do not explicitly remove run-time arguments, they are still
-     * passed along to the callback even if they do not appear in the new order.
-     * They are just appended to the reordered arguments, in the same order they were.
-     * 'retain' => string List items to retain from run-time arguments. Format:
-     * 'remove' => string List items to remove from run-time arguments. Format:
-     * - '1' <-- Select item at offset 1.
-     * - '0 2-4' <-- Select items at offset 0, 2, 3.
-     * - '-3' <-- Select items at offset 0, 1, 2.
-     * - '1-' <-- Select items at offset 1, 2, ... (up to the end).
+     * - 'extra' => array Additional arguments to pass to the callback.
+     * - 'splat' => true|false True means the run-time arguments are flattened.
+     * - 'order' => string Permutation (it allows for repetitions and/or omissions)
+     *   of compile-time + run-time arguments. Format:
+     *   - '1' <-- Place at 0 what is at 1
+     *   - '0 2 4' <-- Place at 0 what is at 0, at 1 what is at 2, at 2 what is at 4.
+     *   Notice that if you do not explicitly remove run-time arguments, they are still
+     *   passed along to the callback even if they do not appear in the new order.
+     *   They are just appended to the reordered arguments, in the same order they were.
+     * - 'remove' => string List items to remove from run-time arguments. Format:
+     *   - '1' <-- Select item at offset 1.
+     *   - '0 2-4' <-- Select items at offset 0, 2, 3.
+     *   - '-3' <-- Select items at offset 0, 1, 2.
+     *   - '1-' <-- Select items at offset 1, 2, ... (up to the end).
+     * - 'retain' => string List items to retain from run-time arguments. Format: (same as 'remove')
      *
      * @var array
      */
@@ -101,7 +101,7 @@ class Ando_StarFunc
     /**
      * Flatten all values of an array.
      *
-     * @param array $array            
+     * @param array $array
      * @return array
      */
     static protected function flatten ($array)
@@ -126,7 +126,7 @@ class Ando_StarFunc
      *
      * @param callable $callback
      *            Any valid PHP callback expression
-     * @param null|array $options            
+     * @param null|array $options
      * @return callable
      */
     static public function def ($callback, $options = null)
@@ -139,7 +139,7 @@ class Ando_StarFunc
     /**
      * Set the callback.
      *
-     * @param callable $callback            
+     * @param callable $callback
      * @return $this
      */
     public function setCallback ($callback)
@@ -191,46 +191,54 @@ class Ando_StarFunc
     }
 
     /**
+     * Retain elements in the selection into array, and remove the others.
      *
-     * @param array $array            
-     * @param string $retain            
-     * @param string $remove            
+     * @param array $array
+     * @param string $selection
      * @return array
      */
-    static protected function select ($array, $retain = '', $remove = '')
+    static protected function retain ($array, $selection = '')
     {
         $result = array_values($array);
-        $top = count($array);
-        
-        if (0 < strlen($retain))
+        if (0 == strlen($selection))
         {
-            $select = self::parse_select($retain, $top);
-            $result = array_intersect_key($result, array_flip($select));
             return $result;
         }
-        
-        if (0 < strlen($remove))
-        {
-            $select = self::parse_select($remove, $top);
-            $result = array_diff_key($result, array_flip($select));
-            return $result;
-        }
-        
+        $selection = self::parse_selection($selection, count($array));
+        $result = array_intersect_key($result, array_flip($selection));
         return $result;
     }
 
     /**
+     * Remove elements in the selection from array, and retain the others.
      *
-     * @param
-     *            $select
-     * @param
-     *            $top
+     * @param array $array
+     * @param string $selection
      * @return array
      */
-    static protected function parse_select ($select, $top)
+    static protected function remove ($array, $selection = '')
+    {
+        $result = array_values($array);
+        if (0 == strlen($selection))
+        {
+            return $result;
+        }
+        $selection = self::parse_selection($selection, count($array));
+        $result = array_diff_key($result, array_flip($selection));
+        return $result;
+    }
+
+    /**
+     * Parse a selection string.
+     *
+     * @param  string  $selection  The string used in a retain or remove option.
+     * @param  integer $top        The count of compile-time + run-time arguments.
+     * @return array               The selected indexes
+     */
+    static protected function parse_selection ($selection, $top)
     {
         $result = array();
-        if (preg_match_all('@(?J)(?<min>\d+)-(?<max>\d+)|(?<min>\d+)-|-(?<max>\d+)|(?<one>\d+)?@', $select, $matches, PREG_SET_ORDER, 0))
+        if (preg_match_all('@(?J)(?<min>\d+)-(?<max>\d+)|(?<min>\d+)-|-(?<max>\d+)|(?<one>\d+)?@', $selection, $matches, PREG_SET_ORDER, 0))
         {
             foreach ($matches as $block)
             {
@@ -247,8 +255,8 @@ class Ando_StarFunc
                 }
                 elseif ('' != $block['one'])
                 {
-                    $keys = array( 
-                        (integer) $block['one'] 
+                    $keys = array(
+                        (integer) $block['one']
                     );
                 }
                 $result = array_merge($result, $keys);
@@ -270,9 +278,9 @@ class Ando_StarFunc
         }
         else
         {
-            $result = array( 
-                $this, 
-                'run' 
+            $result = array(
+                $this,
+                'run'
             );
         }
         return $result;
@@ -297,13 +305,13 @@ class Ando_StarFunc
         {
             // This is useful when the callback is a predefined function which expects only so
             // many arguments and throws a warning if it gets more or less that that.
-            $arguments = self::select($arguments, $this->options['retain']);
+            $arguments = self::retain($arguments, $this->options['retain']);
         }
         elseif (isset($this->options['remove']))
         {
             // This is useful when the callback is a predefined function which expects only so
             // many arguments and throws a warning if it gets more or less that that.
-            $arguments = self::select($arguments, null, $this->options['remove']);
+            $arguments = self::remove($arguments, $this->options['remove']);
         }
         if (isset($this->options['extra']))
         {

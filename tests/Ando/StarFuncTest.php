@@ -75,7 +75,7 @@ class Ando_StarFuncTest extends PHPUnit_Framework_TestCase {
             'extra'  => array(3),   // this is the item at index 0 which 'order' refers to
             'splat'  => true,
             'remove' => '0',        // these are indexes into run-time arguments (the 0 here is unrelated to the next)
-            'order'  => '1 2 3 0',  // these are indexes into prepared plus run-time non-removed arguments
+            'order'  => '1 2 3 0',  // these are indexes into compile-time plus run-time non-removed arguments
         ));
         $result = preg_replace_callback( '@(\w)(\w*)(\w)@', $callable, 'internationalization and localization' );
         $this->assertEquals( 'i18n and l10n', $result );
@@ -86,7 +86,7 @@ class Ando_StarFuncTest extends PHPUnit_Framework_TestCase {
             'extra'  => array(3),   // this is the item at index 0 which 'order' refers to
             'splat'  => true,
             'retain' => '1-',       // these are indexes into run-time arguments (the 0 here is unrelated to the next)
-            'order'  => '1 2 3 0',  // these are indexes into prepared plus run-time non-removed arguments
+            'order'  => '1 2 3 0',  // these are indexes into compile-time plus run-time non-removed arguments
         ));
         $result = preg_replace_callback( '@(\w)(\w*)(\w)@', $callable, 'internationalization and localization' );
         $this->assertEquals( 'i18n and l10n', $result );

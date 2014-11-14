@@ -68,6 +68,7 @@ class Ando_Regex
      * to the end of the regular expression).
      *
      * @param bool $include_eval
+     *
      * @return string
      */
     static public function pattern_global_modifiers($include_eval = false)
@@ -107,6 +108,7 @@ class Ando_Regex
      *
      * @param string $regex
      *            The string to test.
+     *
      * @return bool
      */
     static public function is_matchable($regex)
@@ -130,6 +132,7 @@ class Ando_Regex
      *            End character.
      * @param string $escape
      *            Escaping character.
+     *
      * @return string
      */
     static public function pattern_quoted_string($begin = "'", $end = "'", $escape = "\\\\")
@@ -190,7 +193,7 @@ class Ando_Regex
     /**
      * Constructor.
      *
-     * @param string $template
+     * @param string           $template
      *            A pattern, possibly with $name variables to interpolate later.
      * @param null|bool|string $wrapper
      *            Use null to not treat the wrapper in the template, if any;
@@ -215,6 +218,7 @@ class Ando_Regex
      * Set the template.
      *
      * @param string $template
+     *
      * @return $this
      */
     public function template_set($template)
@@ -240,6 +244,7 @@ class Ando_Regex
      * Set the wrapper.
      *
      * @param null|string $wrapper
+     *
      * @return $this
      */
     public function wrapper_set($wrapper)
@@ -265,6 +270,7 @@ class Ando_Regex
      * Get the expression (raw or wrapped).
      *
      * @param bool $wrapped
+     *
      * @return string
      */
     public function expression($wrapped = false)
@@ -293,6 +299,7 @@ class Ando_Regex
      *
      * @param string $template
      * @param string $wrapper
+     *
      * @return Ando_Regex
      */
     static public function create($template, $wrapper = '@@')
@@ -305,6 +312,7 @@ class Ando_Regex
      * Validate a template.
      *
      * @param string $template
+     *
      * @return bool
      */
     static protected function is_valid_template($template)
@@ -319,6 +327,7 @@ class Ando_Regex
      * Validate a wrapper, which is something like <code>## i s</code>
      *
      * @param string $wrapper
+     *
      * @return bool
      */
     static protected function is_valid_wrapper($wrapper)
@@ -336,6 +345,7 @@ class Ando_Regex
      * Interpolate the variables into the template, taking care of the backreferences.
      *
      * @param array $variables
+     *
      * @return Ando_Regex
      */
     public function interpolate($variables = array())
@@ -364,6 +374,7 @@ class Ando_Regex
      *            $expression
      * @param string $wrapper
      *            (by reference) Used only to return the unwrapped wrapper.
+     *
      * @return string
      */
     static public function unwrap($expression, &$wrapper = null)
@@ -395,6 +406,7 @@ class Ando_Regex
      *            $expression
      * @param
      *            $wrapper
+     *
      * @return string
      */
     static public function wrap($expression, $wrapper)
@@ -430,6 +442,7 @@ class Ando_Regex
      *
      * @param
      *            $matches
+     *
      * @return mixed
      */
     protected function substitute_variable($matches)
@@ -453,6 +466,7 @@ class Ando_Regex
      *
      * @param
      *            $matches
+     *
      * @return string
      */
     protected function fix_backreference($matches)
@@ -469,6 +483,7 @@ class Ando_Regex
      * WARNING: It only supports named groups of the form <code>(?<name>...)</code>
      *
      * @param string $valid_expression
+     *
      * @return integer
      */
     static protected function count_captures($valid_expression)
@@ -486,11 +501,11 @@ class Ando_Regex
      * $matches = array( array( 0 => (string) $match, 1 => (int) $offset ), ... )
      *
      * @param string|array $pattern
-     * @param callable $callback
+     * @param callable     $callback
      * @param string|array $subject
-     * @param int $limit
+     * @param int          $limit
      *            (optional)
-     * @param int $count
+     * @param int          $count
      *            (optional)
      *
      * @return null|string|array

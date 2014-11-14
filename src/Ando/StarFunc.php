@@ -48,7 +48,7 @@ class Ando_StarFunc
     /**
      * Constructor.
      *
-     * @param callable $callback
+     * @param callable   $callback
      *            Callable expression.
      * @param null|array $options
      *            Options.
@@ -71,13 +71,11 @@ class Ando_StarFunc
      * After selecting from $array all the items specified by $permutation,
      * any remaining unselected items of $array are appended to the result.
      *
-     * @param array $array
-     *            The array to permute
-     * @param array $permutation
-     *            The permutation to apply
-     * @param bool $missing
-     *            The policy for missing indexes
-     * @return array The permuted array
+     * @param array $array       The array to permute
+     * @param array $permutation The permutation to apply
+     * @param bool  $missing     The policy for missing indexes
+     *
+     * @return array              The permuted array
      */
     protected static function permute($array, $permutation, $missing = TRUE)
     {
@@ -97,7 +95,8 @@ class Ando_StarFunc
     /**
      * Flatten all values of an array.
      *
-     * @param array $array
+     * @param  array $array
+     *
      * @return array
      */
     static protected function flatten($array)
@@ -116,9 +115,9 @@ class Ando_StarFunc
     /**
      * Define a callback.
      *
-     * @param callable $callback
-     *            Any valid PHP callback expression
-     * @param null|array $options
+     * @param  callable   $callback Any valid PHP callback expression
+     * @param  null|array $options
+     *
      * @return callable
      */
     static public function def($callback, $options = null)
@@ -131,7 +130,8 @@ class Ando_StarFunc
     /**
      * Set the callback.
      *
-     * @param callable $callback
+     * @param  callable $callback
+     *
      * @return $this
      */
     public function setCallback($callback)
@@ -143,10 +143,9 @@ class Ando_StarFunc
     /**
      * Set the options.
      *
-     * @param array $options
-     *            Additional options.
-     * @param bool $merge
-     *            True (default) means that new options replace those with the same key.
+     * @param array $options Additional options.
+     * @param bool  $merge   True (default) means that new options replace those with the same key.
+     *
      * @return $this
      */
     public function setOptions($options, $merge = true)
@@ -162,10 +161,8 @@ class Ando_StarFunc
     /**
      * Merge giver into receiver by replacing values with the same key.
      *
-     * @param
-     *            $receiver
-     * @param
-     *            $giver
+     * @param array $receiver
+     * @param array $giver
      */
     static protected function merge(&$receiver, $giver)
     {
@@ -180,8 +177,9 @@ class Ando_StarFunc
     /**
      * Retain elements in the selection into array, and remove the others.
      *
-     * @param array $array
+     * @param array  $array
      * @param string $selection
+     *
      * @return array
      */
     static protected function retain($array, $selection = '')
@@ -198,8 +196,9 @@ class Ando_StarFunc
     /**
      * Remove elements in the selection from array, and retain the others.
      *
-     * @param array $array
+     * @param array  $array
      * @param string $selection
+     *
      * @return array
      */
     static protected function remove($array, $selection = '')
@@ -216,9 +215,10 @@ class Ando_StarFunc
     /**
      * Parse a selection string.
      *
-     * @param  string $selection The string used in a retain or remove option.
-     * @param  integer $top The count of compile-time + run-time arguments.
-     * @return array               The selected indexes
+     * @param  string  $selection The string used in a retain or remove option.
+     * @param  integer $top       The count of compile-time + run-time arguments.
+     *
+     * @return array              The selected indexes
      */
     static protected function parse_selection($selection, $top)
     {

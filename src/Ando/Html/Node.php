@@ -126,6 +126,7 @@ class Ando_Html_Node
      * Get the descendants.
      *
      * @param boolean $and_children
+     *
      * @return Ando_Html_Node[]
      */
     public function descendants($and_children = true)
@@ -195,6 +196,7 @@ class Ando_Html_Node
      * True if the other node is a sibling of this one.
      *
      * @param Ando_Html_Node $other
+     *
      * @return bool
      */
     public function is_sibling($other)
@@ -206,6 +208,7 @@ class Ando_Html_Node
      * Get the siblings of this node.
      *
      * @param bool $and_self True if this node is to be included or not.
+     *
      * @return Ando_Html_Node[]
      */
     public function siblings($and_self = false)

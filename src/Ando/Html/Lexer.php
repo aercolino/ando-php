@@ -31,6 +31,7 @@ class Ando_Html_Lexer
      * Classify and store matched stuff as a token.
      *
      * @throws Ando_Exception
+     *
      * @param array $matches
      */
     public function tokens_add($matches)
@@ -141,6 +142,7 @@ class Ando_Html_Lexer
      * Get the tokens of the html.
      *
      * @param string $html
+     *
      * @return Ando_Html_Lexer
      */
     static public function parse($html)

@@ -26,8 +26,9 @@ class Ando_Html_Parser
     /**
      * True if the parent needs fixing.
      *
-     * @param integer $index
+     * @param integer          $index
      * @param Ando_Html_Node[] $ancestors
+     *
      * @return bool
      */
     protected function must_fix_parent($index, $ancestors)
@@ -62,8 +63,9 @@ class Ando_Html_Parser
      * For example, if a DIV is found inside a P, this code
      * would close that P before processing this DIV.
      *
-     * @param integer $index
+     * @param integer          $index
      * @param Ando_Html_Node[] $ancestors
+     *
      * @return Ando_Html_Node[]
      */
     protected function fix_parent($index, $ancestors)
@@ -181,7 +183,7 @@ class Ando_Html_Parser
     /**
      * Add and entry to the registry.
      *
-     * @param string $key
+     * @param string         $key
      * @param Ando_Html_Node $value
      */
     protected function registry_add($key, $value)
@@ -259,6 +261,7 @@ class Ando_Html_Parser
      * Parse html.
      *
      * @param string $html
+     *
      * @return Ando_Html_Parser
      */
     static public function parse($html)
@@ -287,6 +290,7 @@ class Ando_Html_Parser
      * Split html element attributes into an array of names and values.
      *
      * @param string $source
+     *
      * @return array
      */
     protected function parse_attributes($source)

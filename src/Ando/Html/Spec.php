@@ -502,6 +502,7 @@ class Ando_Html_Spec
     /**
      *
      * @param string $name
+     *
      * @return array
      */
     static public function info($name)
@@ -518,8 +519,10 @@ class Ando_Html_Spec
      * True if the node has the category.
      *
      * @throws Ando_Exception
+     *
      * @param Ando_Html_Node $node
-     * @param string $category
+     * @param string         $category
+     *
      * @return boolean
      */
     static public function has_category($node, $category)
@@ -632,6 +635,7 @@ class Ando_Html_Spec
      * True if an element with that name is void but looks like a start.
      *
      * @param string $name
+     *
      * @return boolean
      */
     static public function is_void_but_looks_like_a_start($name)
@@ -649,6 +653,7 @@ class Ando_Html_Spec
      * True if the node has valid context.
      *
      * @param Ando_Html_Node $node
+     *
      * @return boolean
      */
     static public function has_valid_context($node)
@@ -668,6 +673,7 @@ class Ando_Html_Spec
      * True if the node has valid content.
      *
      * @param Ando_Html_Node $node
+     *
      * @return boolean
      */
     static public function has_valid_content($node)
@@ -687,7 +693,9 @@ class Ando_Html_Spec
      * True if node has valid context.
      *
      * @throws Ando_Exception
+     *
      * @param Ando_Html_Node $node
+     *
      * @return boolean
      */
     protected function html_has_valid_context($node)
@@ -703,7 +711,9 @@ class Ando_Html_Spec
      * True if the node has valid content.
      *
      * @throws Ando_Exception
+     *
      * @param Ando_Html_Node $node
+     *
      * @return boolean
      */
     protected function html_has_valid_content($node)

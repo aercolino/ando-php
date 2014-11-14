@@ -20,7 +20,7 @@ class Ando_Utf8
      * @link http://andowebsit.es/blog/noteslog.com/post/escaping-and-unescaping-utf-8-characters-in-php/
      *
      * @param string $value
-     * @param array $options
+     * @param array  $options
      *            'escapeControlChars' => boolean (default: TRUE),
      *            'escapePrintableASCII' => boolean (default: FALSE),
      *            'write' => array(
@@ -148,6 +148,7 @@ class Ando_Utf8
      * @link http://andowebsit.es/blog/noteslog.com/post/escaping-and-unescaping-utf-8-characters-in-php/
      *
      * @param string $utf8Char
+     *
      * @throws Ando_Exception If the code point of $utf8Char is not unicode
      * @return integer
      */
@@ -233,6 +234,7 @@ class Ando_Utf8
      * @link http://en.wikipedia.org/wiki/UTF-16/UCS-2
      *
      * @param string $utf8Char
+     *
      * @throws Ando_Exception If the code point of $utf8Char is not extended unicode
      * @return array
      */
@@ -270,7 +272,7 @@ class Ando_Utf8
      * @link http://andowebsit.es/blog/noteslog.com/post/escaping-and-unescaping-utf-8-characters-in-php/
      *
      * @param string $value
-     * @param array $options
+     * @param array  $options
      *            'read' => array(
      *            'pattern' => preg (default: '@\\\\u([0-9A-Fa-f]{4})@'),
      *            'callback' => callable (default: create_function('$all, $code', 'return hexdec($code);')),
@@ -338,6 +340,7 @@ class Ando_Utf8
      * @link http://andowebsit.es/blog/noteslog.com/post/escaping-and-unescaping-utf-8-characters-in-php/
      *
      * @param integer $codePoint
+     *
      * @throws Ando_Exception if the code point is not unicode
      * @return string
      */
@@ -414,6 +417,7 @@ class Ando_Utf8
      * @link http://en.wikipedia.org/wiki/UTF-16/UCS-2
      *
      * @param array $surrogatePair
+     *
      * @throws Ando_Exception If the surrogate pair is not extended unicode
      * @return string
      */
@@ -438,6 +442,7 @@ class Ando_Utf8
      * If there are filters return true, else false
      *
      * @param array $options
+     *
      * @throws Ando_Exception If there are malformed filters
      * @return boolean
      */
@@ -461,6 +466,7 @@ class Ando_Utf8
      * A little calling interface: validation
      *
      * @param array $handler
+     *
      * @return boolean
      */
     private static function isCallable($handler)
@@ -474,6 +480,7 @@ class Ando_Utf8
      *
      * @param array $handler
      * @param mixed $args
+     *
      * @return mixed
      */
     private static function call($handler, $args)
@@ -489,6 +496,7 @@ class Ando_Utf8
      * Return the transposition of the given array
      *
      * @param array $rows
+     *
      * @return array
      */
     private static function transpose($rows)
@@ -506,8 +514,9 @@ class Ando_Utf8
      *
      * @param string $processed
      * @param string $value
-     * @param array $matches
-     * @param array $handler
+     * @param array  $matches
+     * @param array  $handler
+     *
      * @return integer
      */
     private static function eatUpMatches(&$processed, &$value, $matches, $handler)

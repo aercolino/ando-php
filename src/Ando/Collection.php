@@ -29,8 +29,9 @@ class Ando_Collection
 
     /**
      *
-     * @param array $data
+     * @param array   $data
      * @param boolean $preserve_keys
+     *
      * @return Ando_Collection
      */
     static public function def($data = null, $preserve_keys = false)
@@ -54,6 +55,7 @@ class Ando_Collection
      * Get the element with the key.
      *
      * @param integer|string $key
+     *
      * @throws Ando_Exception
      * @return mixed
      */
@@ -70,7 +72,8 @@ class Ando_Collection
      * Set the element with the key.
      *
      * @param integer|string $key
-     * @param mixed $element
+     * @param mixed          $element
+     *
      * @return Ando_Collection
      */
     public function element_set($key, $element)
@@ -83,7 +86,8 @@ class Ando_Collection
      * Get the value of the named property for the element with the key.
      *
      * @param integer|string $key
-     * @param string $name
+     * @param string         $name
+     *
      * @return mixed
      */
     public function property($key, $name)
@@ -103,8 +107,9 @@ class Ando_Collection
      * Set the value of the named property for the element with the key.
      *
      * @param integer|string $key
-     * @param string $name
-     * @param mixed $value
+     * @param string         $name
+     * @param mixed          $value
+     *
      * @return Ando_Collection
      */
     public function property_set($key, $name, $value)
@@ -123,6 +128,7 @@ class Ando_Collection
      * Array of named properties.
      *
      * @param string $name
+     *
      * @return array
      */
     public function pluck($name)

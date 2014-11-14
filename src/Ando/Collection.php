@@ -21,7 +21,7 @@ class Ando_Collection
      *
      * @param string $preserve_keys
      */
-    protected function __construct ($preserve_keys = false)
+    protected function __construct($preserve_keys = false)
     {
         $this->preserving_keys = $preserve_keys;
         $this->data = array();
@@ -33,21 +33,17 @@ class Ando_Collection
      * @param boolean $preserve_keys
      * @return Ando_Collection
      */
-    static public function def ($data = null, $preserve_keys = false)
+    static public function def($data = null, $preserve_keys = false)
     {
         $result = new self($preserve_keys);
-        if (!is_null($data))
-        {
-            if (!( is_array($data) || $data instanceof Traversable ))
-            {
+        if (!is_null($data)) {
+            if (!(is_array($data) || $data instanceof Traversable)) {
                 throw new Ando_Exception('Expected ');
             }
-            foreach ($data as $key => $element)
-            {
+            foreach ($data as $key => $element) {
                 $result->data[$key] = $element;
             }
-            if (!$preserve_keys)
-            {
+            if (!$preserve_keys) {
                 $result->data = array_values($result->data);
             }
         }
@@ -61,10 +57,9 @@ class Ando_Collection
      * @throws Ando_Exception
      * @return mixed
      */
-    public function element ($key)
+    public function element($key)
     {
-        if (!isset($this->data[$key]))
-        {
+        if (!isset($this->data[$key])) {
             throw new Ando_Exception('Expected a valid key. (got instead "' . $key . '")');
         }
         $result = $this->data[$key];
@@ -78,7 +73,7 @@ class Ando_Collection
      * @param mixed $element
      * @return Ando_Collection
      */
-    public function element_set ($key, $element)
+    public function element_set($key, $element)
     {
         $this->data[$key] = $element;
         return $this;
@@ -91,19 +86,14 @@ class Ando_Collection
      * @param string $name
      * @return mixed
      */
-    public function property ($key, $name)
+    public function property($key, $name)
     {
         $element = $this->element($key);
-        if (is_object($element))
-        {
+        if (is_object($element)) {
             $result = $element->$name;
-        }
-        elseif (is_array($element))
-        {
+        } elseif (is_array($element)) {
             $result = $element['name'];
-        }
-        else
-        {
+        } else {
             throw new Ando_Exception('Unexpected property access for scalar element. (key: "' . $key . '", name: "' . $name . '")');
         }
         return $result;
@@ -117,15 +107,12 @@ class Ando_Collection
      * @param mixed $value
      * @return Ando_Collection
      */
-    public function property_set ($key, $name, $value)
+    public function property_set($key, $name, $value)
     {
         $element = $this->element($key);
-        if (is_object($element))
-        {
+        if (is_object($element)) {
             $element->$name = $value;
-        }
-        elseif (is_array($element))
-        {
+        } elseif (is_array($element)) {
             $element['name'] = $value;
         }
         $this->element_set($key, $element);
@@ -138,15 +125,13 @@ class Ando_Collection
      * @param string $name
      * @return array
      */
-    public function pluck ($name)
+    public function pluck($name)
     {
         $result = array();
-        foreach ($this->data as $key => $element)
-        {
+        foreach ($this->data as $key => $element) {
             $result[$key] = $this->property($key, $name);
         }
-        if (!$this->preserving_keys)
-        {
+        if (!$this->preserving_keys) {
             $result = array_values($result);
         }
         return $result;
@@ -157,10 +142,9 @@ class Ando_Collection
      *
      * @return array
      */
-    public function to_array ()
+    public function to_array()
     {
-        if (!$preserve_keys)
-        {
+        if (!$this->preserving_keys) {
             $this->data = array_values($this->data);
         }
         return $this->data;

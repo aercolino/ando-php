@@ -24,7 +24,7 @@ class Ando_Html_Token
      *
      * @return integer
      */
-    public function index ()
+    public function index()
     {
         return $this->index;
     }
@@ -41,7 +41,7 @@ class Ando_Html_Token
      *
      * @return string
      */
-    public function source ()
+    public function source()
     {
         return $this->source;
     }
@@ -58,7 +58,7 @@ class Ando_Html_Token
      *
      * @return integer
      */
-    public function offset ()
+    public function offset()
     {
         return $this->offset;
     }
@@ -75,7 +75,7 @@ class Ando_Html_Token
      *
      * @return integer
      */
-    public function length ()
+    public function length()
     {
         return $this->length;
     }
@@ -92,7 +92,7 @@ class Ando_Html_Token
      *
      * @return string
      */
-    public function type ()
+    public function type()
     {
         return $this->type;
     }
@@ -109,7 +109,7 @@ class Ando_Html_Token
      *
      * @return string
      */
-    public function tag ()
+    public function tag()
     {
         return $this->tag;
     }
@@ -119,7 +119,7 @@ class Ando_Html_Token
      *
      * @param array $data
      */
-    public function __construct ($data)
+    public function __construct($data)
     {
         $this->index = isset($data['index']) ? $data['index'] : null;
         $this->source = isset($data['source']) ? $data['source'] : null;

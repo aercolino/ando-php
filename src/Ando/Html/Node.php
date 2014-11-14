@@ -16,7 +16,7 @@ class Ando_Html_Node
      *
      * @return integer
      */
-    public function index ()
+    public function index()
     {
         return $this->index;
     }
@@ -36,7 +36,7 @@ class Ando_Html_Node
      *
      * @return string
      */
-    public function name ()
+    public function name()
     {
         return $this->name;
     }
@@ -53,7 +53,7 @@ class Ando_Html_Node
      *
      * @return Ando_Html_Node
      */
-    public function parent ()
+    public function parent()
     {
         return $this->parent;
     }
@@ -70,13 +70,12 @@ class Ando_Html_Node
      *
      * @return Ando_Html_Node[]
      */
-    public function ancestors ($and_parent = true)
+    public function ancestors($and_parent = true)
     {
         $result = $this->ancestors;
-        if (!$and_parent)
-        {
+        if (!$and_parent) {
             $result = array_values(array_diff($result, array(
-                    $this->parent
+                $this->parent
             )));
         }
         return $result;
@@ -94,7 +93,7 @@ class Ando_Html_Node
      *
      * @return array
      */
-    public function attributes ()
+    public function attributes()
     {
         return $this->attributes;
     }
@@ -111,7 +110,7 @@ class Ando_Html_Node
      *
      * @return Ando_Html_Node[]
      */
-    public function children ()
+    public function children()
     {
         return $this->children;
     }
@@ -129,11 +128,10 @@ class Ando_Html_Node
      * @param boolean $and_children
      * @return Ando_Html_Node[]
      */
-    public function descendants ($and_children = true)
+    public function descendants($and_children = true)
     {
         $result = $this->descendants;
-        if (!$and_children)
-        {
+        if (!$and_children) {
             $result = array_values(array_diff($result, $this->children));
         }
         return $result;
@@ -151,7 +149,7 @@ class Ando_Html_Node
      *
      * @return string
      */
-    public function content ()
+    public function content()
     {
         return $this->content;
     }
@@ -159,9 +157,9 @@ class Ando_Html_Node
     /**
      * Constructor.
      *
-     * @param array $data  An associative array for specifying node properties.
+     * @param array $data An associative array for specifying node properties.
      */
-    public function __construct ($data)
+    public function __construct($data)
     {
         $this->index = isset($data['index']) ? $data['index'] : null;
         $this->name = isset($data['name']) ? $data['name'] : null;
@@ -178,7 +176,7 @@ class Ando_Html_Node
      *
      * @return bool
      */
-    public function is_root ()
+    public function is_root()
     {
         return is_null($this->parent);
     }
@@ -188,7 +186,7 @@ class Ando_Html_Node
      *
      * @return bool
      */
-    public function is_leaf ()
+    public function is_leaf()
     {
         return 0 == count($this->children);
     }
@@ -199,7 +197,7 @@ class Ando_Html_Node
      * @param Ando_Html_Node $other
      * @return bool
      */
-    public function is_sibling ($other)
+    public function is_sibling($other)
     {
         return $other->parent == $this->parent;
     }
@@ -207,20 +205,18 @@ class Ando_Html_Node
     /**
      * Get the siblings of this node.
      *
-     * @param bool $and_self  True if this node is to be included or not.
+     * @param bool $and_self True if this node is to be included or not.
      * @return Ando_Html_Node[]
      */
-    public function siblings ($and_self = false)
+    public function siblings($and_self = false)
     {
-        if ($this->is_root())
-        {
+        if ($this->is_root()) {
             return array();
         }
         $result = $this->parent->children;
-        if (!$and_self)
-        {
+        if (!$and_self) {
             $result = array_values(array_diff($result, array(
-                    $this
+                $this
             )));
         }
         return $result;
@@ -232,15 +228,13 @@ class Ando_Html_Node
      *
      * @return Ando_Html_Node
      */
-    public function link_from_ancestors ()
+    public function link_from_ancestors()
     {
-        foreach ($this->ancestors as $ancestor)
-        {
+        foreach ($this->ancestors as $ancestor) {
             $ancestor->descendants[] = $this;
             array_unique($ancestor->descendants);
         }
-        if (!$this->is_root())
-        {
+        if (!$this->is_root()) {
             $this->parent->children[] = $this;
             array_unique($this->parent->children);
         }

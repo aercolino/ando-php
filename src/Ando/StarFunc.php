@@ -53,7 +53,7 @@ class Ando_StarFunc
      * @param null|array $options
      *            Options.
      */
-    public function __construct ($callback, $options = null)
+    public function __construct($callback, $options = null)
     {
         $this->callback = $callback;
         $this->options = $options;
@@ -79,18 +79,14 @@ class Ando_StarFunc
      *            The policy for missing indexes
      * @return array The permuted array
      */
-    protected static function permute ($array, $permutation, $missing = TRUE)
+    protected static function permute($array, $permutation, $missing = TRUE)
     {
         $result = array();
-        foreach ($permutation as $key)
-        {
-            if (array_key_exists($key, $array))
-            {
+        foreach ($permutation as $key) {
+            if (array_key_exists($key, $array)) {
                 $result[] = $array[$key]; // a NULL in $array is preserved
                 unset($array[$key]);
-            }
-            elseif ($missing)
-            {
+            } elseif ($missing) {
                 $result[] = NULL; // a missing index is set to NULL
             }
         }
@@ -104,17 +100,13 @@ class Ando_StarFunc
      * @param array $array
      * @return array
      */
-    static protected function flatten ($array)
+    static protected function flatten($array)
     {
         $result = array();
-        foreach (array_values($array) as $value)
-        {
-            if (is_array($value))
-            {
+        foreach (array_values($array) as $value) {
+            if (is_array($value)) {
                 $result = array_merge($result, self::flatten($value));
-            }
-            else
-            {
+            } else {
                 $result[] = $value;
             }
         }
@@ -129,7 +121,7 @@ class Ando_StarFunc
      * @param null|array $options
      * @return callable
      */
-    static public function def ($callback, $options = null)
+    static public function def($callback, $options = null)
     {
         $result = new self($callback, $options);
         $result = $result->ref();
@@ -142,7 +134,7 @@ class Ando_StarFunc
      * @param callable $callback
      * @return $this
      */
-    public function setCallback ($callback)
+    public function setCallback($callback)
     {
         $this->callback = $callback;
         return $this;
@@ -157,14 +149,11 @@ class Ando_StarFunc
      *            True (default) means that new options replace those with the same key.
      * @return $this
      */
-    public function setOptions ($options, $merge = true)
+    public function setOptions($options, $merge = true)
     {
-        if ($merge)
-        {
+        if ($merge) {
             self::merge($this->options, $options);
-        }
-        else
-        {
+        } else {
             $this->options = $options;
         }
         return $this;
@@ -178,14 +167,12 @@ class Ando_StarFunc
      * @param
      *            $giver
      */
-    static protected function merge (&$receiver, $giver)
+    static protected function merge(&$receiver, $giver)
     {
-        if (!is_array($receiver))
-        {
+        if (!is_array($receiver)) {
             $receiver = array();
         }
-        foreach ($giver as $key => $value)
-        {
+        foreach ($giver as $key => $value) {
             $receiver[$key] = $value;
         }
     }
@@ -197,11 +184,10 @@ class Ando_StarFunc
      * @param string $selection
      * @return array
      */
-    static protected function retain ($array, $selection = '')
+    static protected function retain($array, $selection = '')
     {
         $result = array_values($array);
-        if (0 == strlen($selection))
-        {
+        if (0 == strlen($selection)) {
             return $result;
         }
         $selection = self::parse_selection($selection, count($array));
@@ -216,11 +202,10 @@ class Ando_StarFunc
      * @param string $selection
      * @return array
      */
-    static protected function remove ($array, $selection = '')
+    static protected function remove($array, $selection = '')
     {
         $result = array_values($array);
-        if (0 == strlen($selection))
-        {
+        if (0 == strlen($selection)) {
             return $result;
         }
         $selection = self::parse_selection($selection, count($array));
@@ -231,33 +216,25 @@ class Ando_StarFunc
     /**
      * Parse a selection string.
      *
-     * @param  string  $selection  The string used in a retain or remove option.
-     * @param  integer $top        The count of compile-time + run-time arguments.
+     * @param  string $selection The string used in a retain or remove option.
+     * @param  integer $top The count of compile-time + run-time arguments.
      * @return array               The selected indexes
      */
-    static protected function parse_selection ($selection, $top)
+    static protected function parse_selection($selection, $top)
     {
         $result = array();
-        if (preg_match_all('@(?J)(?<min>\d+)-(?<max>\d+)|(?<min>\d+)-|-(?<max>\d+)|(?<one>\d+)?@', $selection, $matches, PREG_SET_ORDER, 0))
-        {
-            foreach ($matches as $block)
-            {
-                if ('' == $block[0])
-                {
+        if (preg_match_all('@(?J)(?<min>\d+)-(?<max>\d+)|(?<min>\d+)-|-(?<max>\d+)|(?<one>\d+)?@', $selection, $matches, PREG_SET_ORDER, 0)) {
+            foreach ($matches as $block) {
+                if ('' == $block[0]) {
                     continue;
                 }
                 $keys = array();
-                if ('' != $block['min'] || '' != $block['max'])
-                {
-                    $min = '' != $block['min'] ? max((integer) $block['min'], 0) : 0;
-                    $max = '' != $block['max'] ? min((integer) $block['max'], $top) : $top;
+                if ('' != $block['min'] || '' != $block['max']) {
+                    $min = '' != $block['min'] ? max((integer)$block['min'], 0) : 0;
+                    $max = '' != $block['max'] ? min((integer)$block['max'], $top) : $top;
                     $keys = range($min, $max - 1);
-                }
-                elseif ('' != $block['one'])
-                {
-                    $keys = array(
-                        (integer) $block['one']
-                    );
+                } elseif ('' != $block['one']) {
+                    $keys = array((integer)$block['one']);
                 }
                 $result = array_merge($result, $keys);
             }
@@ -270,14 +247,11 @@ class Ando_StarFunc
      *
      * @return array
      */
-    public function ref ()
+    public function ref()
     {
-        if (empty($this->options))
-        {
+        if (empty($this->options)) {
             $result = $this->callback;
-        }
-        else
-        {
+        } else {
             $result = array(
                 $this,
                 'run'
@@ -291,38 +265,32 @@ class Ando_StarFunc
      *
      * @return mixed
      */
-    public function run ()
+    public function run()
     {
         $arguments = func_get_args();
-        if (isset($this->options['splat']))
-        {
+        if (isset($this->options['splat'])) {
             // This is useful when the callback addresses individual items of a passed array;
             // for example, when preg_replace_callback passes $matches but the callback expects
             // $all, $group1, ... $groupN instead.
             $arguments = self::flatten($arguments);
         }
-        if (isset($this->options['retain']))
-        {
+        if (isset($this->options['retain'])) {
             // This is useful when the callback is a predefined function which expects only so
             // many arguments and throws a warning if it gets more or less that that.
             $arguments = self::retain($arguments, $this->options['retain']);
-        }
-        elseif (isset($this->options['remove']))
-        {
+        } elseif (isset($this->options['remove'])) {
             // This is useful when the callback is a predefined function which expects only so
             // many arguments and throws a warning if it gets more or less that that.
             $arguments = self::remove($arguments, $this->options['remove']);
         }
-        if (isset($this->options['extra']))
-        {
+        if (isset($this->options['extra'])) {
             // We merge compile time arguments PLUS run-time arguments instead of the other way around
             // because the programmer will always know what arguments she needs at compile time,
             // because she needs to provide them before, while the number of run-time arguments
             // could vary.
             $arguments = array_merge(array_values($this->options['extra']), $arguments);
         }
-        if (isset($this->options['order']))
-        {
+        if (isset($this->options['order'])) {
             // This is useful when the callback expects arguments in a different order than the
             // one the caller is using. It also allows the programmer to "discard" certain arguments.
             // In reality, arguments are not discarded, they are just postponed, which will look

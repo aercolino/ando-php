@@ -419,22 +419,18 @@ class Ando_Html_Spec
      * @param string $category
      * @param string $list
      */
-    protected function category_set ($category, $list)
+    protected function category_set($category, $list)
     {
         $instance = self::instance();
         $list = explode(', ', $list);
         $instance->category[$category] = $list;
-        foreach ($list as $name)
-        {
+        foreach ($list as $name) {
             $if = ' if ';
             $if_offset = strpos($name, $if);
-            if (-1 < $if_offset)
-            {
+            if (-1 < $if_offset) {
                 $real_name = substr($name, 0, $if_offset);
                 $real_category = $category . ' ' . substr($name, $if_offset + strlen($if));
-            }
-            else
-            {
+            } else {
                 $real_name = $name;
                 $real_category = $category;
             }
@@ -444,15 +440,15 @@ class Ando_Html_Spec
 
     /**
      */
-    protected function categories_set ()
+    protected function categories_set()
     {
         $this->category_set('metadata', 'base, command, link, meta, noscript, script, style, title');
         $this->category_set('flow',
-                'a, abbr, address, article, aside, audio, b,bdo, bdi, blockquote, br, button, canvas, cite, code, command, data, datalist, del, details, dfn, div, dl, em, embed, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, i, iframe, img, input, ins, kbd, keygen, label, main, map, mark, math, menu, meter, nav, noscript, object, ol, output, p, pre, progress, q, ruby, s, samp, script, section, select, small, span, strong, sub, sup, svg, table, template, textarea, time, ul, var, video, wbr, text');
+            'a, abbr, address, article, aside, audio, b,bdo, bdi, blockquote, br, button, canvas, cite, code, command, data, datalist, del, details, dfn, div, dl, em, embed, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, i, iframe, img, input, ins, kbd, keygen, label, main, map, mark, math, menu, meter, nav, noscript, object, ol, output, p, pre, progress, q, ruby, s, samp, script, section, select, small, span, strong, sub, sup, svg, table, template, textarea, time, ul, var, video, wbr, text');
         $this->category_set('sectioning', 'article, aside, nav, section');
         $this->category_set('heading', 'h1, h2, h3, h4, h5, h6, hgroup');
         $this->category_set('phrasing',
-                'abbr, audio, b, bdo, br, button, canvas, cite, code, command, datalist, dfn, em, embed, i, iframe, img, input, kbd, keygen, label, mark, math, meter, noscript, object, output, progress, q, ruby, samp, script, select, small, span, strong, sub, sup, svg, textarea, time, var, video, wbr, text');
+            'abbr, audio, b, bdo, br, button, canvas, cite, code, command, datalist, dfn, em, embed, i, iframe, img, input, kbd, keygen, label, mark, math, meter, noscript, object, output, progress, q, ruby, samp, script, select, small, span, strong, sub, sup, svg, textarea, time, var, video, wbr, text');
         $this->category_set('embedded', 'audio, canvas, embed, iframe, img, math, object, svg, video');
         $this->category_set('interactive', 'a, button, details, embed, iframe, keygen, label, select, textarea');
 
@@ -465,7 +461,7 @@ class Ando_Html_Spec
 
         $this->category_set('transparent', '');
         $this->category_set('palpable',
-                'a, abbr, address, article, aside, controls, b, bdi, bdo, blockquote, button, canvas, cite, code, data, details, dfn, div, em, embed, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, i, iframe, img, ins, kbd, keygen, label, main, map, mark, math, meter, nav, object, output, p, pre, progress, q, ruby, s, samp, section, select, small, span, strong, sub, sup, svg, table, textarea, time, u, var, video, text');
+            'a, abbr, address, article, aside, controls, b, bdi, bdo, blockquote, button, canvas, cite, code, data, details, dfn, div, em, embed, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, i, iframe, img, ins, kbd, keygen, label, main, map, mark, math, meter, nav, object, output, p, pre, progress, q, ruby, s, samp, section, select, small, span, strong, sub, sup, svg, table, textarea, time, u, var, video, text');
         $this->category_set('script-supporting', 'script, template');
 
         $this->category_set('flow-if', 'area if descendant of map element, link if itemprop attribute present, meta if itemprop attribute present, style if itemprop attribute present');
@@ -473,12 +469,12 @@ class Ando_Html_Spec
         $this->category_set('interactive-if', 'audio if controls attribute present, img if usemap attribute present, input if type attribute not hidden, object if usemap attribute present, video if controls attribute present');
         $this->category_set('labelable-if', 'input if type attribute not hidden');
         $this->category_set('palpable-if',
-                'audio if controls attribute present, dl if children include at least one name-value group, input if type attribute not hidden, menu if type attribute toolbar, ol if children include at least one li element, ul if children include at least one li element');
+            'audio if controls attribute present, dl if children include at least one name-value group, input if type attribute not hidden, menu if type attribute toolbar, ol if children include at least one li element, ul if children include at least one li element');
     }
 
     /**
      */
-    protected function __construct ()
+    protected function __construct()
     {
         $this->categories_set();
     }
@@ -495,10 +491,9 @@ class Ando_Html_Spec
      *
      * @return Ando_Html_Spec
      */
-    static public function instance ()
+    static public function instance()
     {
-        if (empty(self::$instance))
-        {
+        if (empty(self::$instance)) {
             self::$instance = new self();
         }
         return self::$instance;
@@ -509,15 +504,12 @@ class Ando_Html_Spec
      * @param string $name
      * @return array
      */
-    static public function info ($name)
+    static public function info($name)
     {
         $instance = self::instance();
-        if (isset($instance->elements[$name]))
-        {
+        if (isset($instance->elements[$name])) {
             return $instance->elements[$name];
-        }
-        else
-        {
+        } else {
             return array();
         }
     }
@@ -530,123 +522,108 @@ class Ando_Html_Spec
      * @param string $category
      * @return boolean
      */
-    static public function has_category ($node, $category)
+    static public function has_category($node, $category)
     {
         $instance = self::instance();
         $name = $node->name();
-        if (!isset($instance->elements[$name]))
-        {
+        if (!isset($instance->elements[$name])) {
             throw new Ando_Exception('Expected a valid HTML element name. (got instead "' . $name . '")');
         }
-        if (!in_array($category, $instance->categories))
-        {
+        if (!in_array($category, $instance->categories)) {
             throw new Ando_Exception('Expected a valid HTML element category. (got instead "' . $category . '")');
         }
-        if (in_array($category, $instance->elements[$name]['categories']))
-        {
+        if (in_array($category, $instance->elements[$name]['categories'])) {
             return true;
         }
 
         $result = false;
-        switch ($name)
-        {
+        switch ($name) {
 
             case 'area':
-                if ($category == 'flow' || $category == 'phrasing')
-                {
+                if ($category == 'flow' || $category == 'phrasing') {
                     $ancestors = Ando_Collection::def($node->ancestors())->pluck('name');
                     $result = in_array('map', $ancestors);
                 }
-            break;
+                break;
 
             case 'link':
             case 'meta':
-                if ($category == 'flow' || $category == 'phrasing')
-                {
+                if ($category == 'flow' || $category == 'phrasing') {
                     $attrs = $node->attributes();
                     $result = isset($attrs['itemprop']);
                 }
-            break;
+                break;
 
             case 'style':
-                if ($category == 'flow')
-                {
+                if ($category == 'flow') {
                     $attrs = $node->attributes();
                     $result = isset($attrs['itemprop']);
                 }
-            break;
+                break;
 
             case 'audio':
-                if ($category == 'interactive' || $category == 'palpable')
-                {
+                if ($category == 'interactive' || $category == 'palpable') {
                     $attrs = $node->attributes();
                     $result = isset($attrs['controls']);
                 }
-            break;
+                break;
 
             case 'img':
-                if ($category == 'interactive')
-                {
+                if ($category == 'interactive') {
                     $attrs = $node->attributes();
                     $result = isset($attrs['usemap']);
                 }
-            break;
+                break;
 
             case 'input':
                 if (in_array($category, array(
                     'interactive',
                     'labelable',
                     'palpable'
-                )))
-                {
+                ))) {
                     $attrs = $node->attributes();
                     $result = $attrs['type'] != 'hidden';
                 }
-            break;
+                break;
 
             case 'object':
-                if ($category == 'interactive')
-                {
+                if ($category == 'interactive') {
                     $attrs = $node->attributes();
                     $result = isset($attrs['usemap']);
                 }
-            break;
+                break;
 
             case 'video':
-                if ($category == 'interactive')
-                {
+                if ($category == 'interactive') {
                     $attrs = $node->attributes();
                     $result = isset($attrs['controls']);
                 }
-            break;
+                break;
 
             case 'dl':
-                if ($category == 'palpable')
-                {
+                if ($category == 'palpable') {
                     $children = Ando_Collection::def($node->children())->pluck('name');
                     $result = in_array('dt', $children) && in_array('dd', $children);
                 }
-            break;
+                break;
 
             case 'menu':
-                if ($category == 'palpable')
-                {
+                if ($category == 'palpable') {
                     $attrs = $node->attributes();
                     $result = $attrs['type'] == 'toolbar';
                 }
-            break;
+                break;
 
             case 'ol':
             case 'ul':
-                if ($category == 'palpable')
-                {
+                if ($category == 'palpable') {
                     $children = Ando_Collection::def($node->children())->pluck('name');
                     $result = in_array('li', $children);
                 }
-            break;
+                break;
 
             default:
-            break;
+                break;
         }
         return $result;
     }
@@ -657,13 +634,12 @@ class Ando_Html_Spec
      * @param string $name
      * @return boolean
      */
-    static public function is_void_but_looks_like_a_start ($name)
+    static public function is_void_but_looks_like_a_start($name)
     {
         if (in_array($name, array(
             'br',
             'hr'
-        )))
-        {
+        ))) {
             return true;
         }
         return false;
@@ -675,17 +651,14 @@ class Ando_Html_Spec
      * @param Ando_Html_Node $node
      * @return boolean
      */
-    static public function has_valid_context ($node)
+    static public function has_valid_context($node)
     {
         $instance = self::instance();
         $name = $node->name();
         $method = $name . '_' . __METHOD__;
-        if (method_exists($instance, $method))
-        {
+        if (method_exists($instance, $method)) {
             $result = $instance->$method($node);
-        }
-        else
-        {
+        } else {
             $result = true; // this is for ignoring anything we don't know about
         }
         return $result;
@@ -697,17 +670,14 @@ class Ando_Html_Spec
      * @param Ando_Html_Node $node
      * @return boolean
      */
-    static public function has_valid_content ($node)
+    static public function has_valid_content($node)
     {
         $instance = self::instance();
         $name = $node->name();
         $method = $name . '_' . __METHOD__;
-        if (method_exists($instance, $method))
-        {
+        if (method_exists($instance, $method)) {
             $result = $instance->$method($node);
-        }
-        else
-        {
+        } else {
             $result = true; // this is for ignoring anything we don't know about
         }
         return $result;
@@ -720,10 +690,9 @@ class Ando_Html_Spec
      * @param Ando_Html_Node $node
      * @return boolean
      */
-    protected function html_has_valid_context ($node)
+    protected function html_has_valid_context($node)
     {
-        if ($node->name() != 'html')
-        {
+        if ($node->name() != 'html') {
             throw new Ando_Exception('Expected a "html" node. (got instead "' . $node->name() . '")');
         }
         $result = $node->is_root();
@@ -737,10 +706,9 @@ class Ando_Html_Spec
      * @param Ando_Html_Node $node
      * @return boolean
      */
-    protected function html_has_valid_content ($node)
+    protected function html_has_valid_content($node)
     {
-        if ($node->name() != 'html')
-        {
+        if ($node->name() != 'html') {
             throw new Ando_Exception('Expected a "html" node. (got instead "' . $node->name() . '")');
         }
         $children = $node->children();

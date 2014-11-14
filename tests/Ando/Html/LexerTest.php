@@ -1,8 +1,10 @@
 <?php
 
-class Ando_Html_LexerTest extends PHPUnit_Framework_TestCase {
+class Ando_Html_LexerTest extends PHPUnit_Framework_TestCase
+{
 
-    public function minimal_page() {
+    public function minimal_page()
+    {
         $result = <<<HTML
 <!DOCTYPE html>
 <html>
@@ -16,7 +18,8 @@ HTML;
         return $result;
     }
 
-    public function html_comment_p_script() {
+    public function html_comment_p_script()
+    {
         $result = <<<HTML
 <!DOCTYPE html>
 <html>
@@ -42,7 +45,8 @@ HTML;
         return $result;
     }
 
-    public function test_minimal_page_has_17_tokens() {
+    public function test_minimal_page_has_17_tokens()
+    {
         $html = $this->minimal_page();
         $lexer = Ando_Html_Lexer::parse($html);
         $tokens = $lexer->tokens();

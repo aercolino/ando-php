@@ -117,7 +117,7 @@ class Ando_Html_Parser
                     /**
                      * @var Ando_Html_Node $parent
                      */
-                    if (!is_null($parent) && $this->parent->name() == $token->tag()) {
+                    if (!is_null($parent) && $parent->name() == $token->tag()) {
                         array_pop($ancestors);
                     }
                     break;
@@ -194,7 +194,8 @@ class Ando_Html_Parser
      *
      * @param Ando_Html_Node $node
      */
-    protected function register($node) {
+    protected function register($node)
+    {
         $this->registry_add($node->name(), $node);
         $attributes = $node->attributes();
         if (count($attributes)) {
@@ -237,7 +238,8 @@ class Ando_Html_Parser
      *
      * @return array
      */
-    public function registry() {
+    public function registry()
+    {
         return $this->registry;
     }
 
@@ -276,7 +278,8 @@ class Ando_Html_Parser
      * @param array $buffer
      * @param array $matches
      */
-    protected function attribute_add( &$buffer, $matches ) {
+    protected function attribute_add(&$buffer, $matches)
+    {
         $buffer[$matches['name']] = $matches['value'];
     }
 
@@ -291,7 +294,7 @@ class Ando_Html_Parser
         $result = array();
         $regex = Ando_Regex::create('(?<name>$name)=(?<value>$value)')->interpolate(
             array(
-                'name'  => '([\w-]+)\s*',
+                'name' => '([\w-]+)\s*',
                 'value' => '\s*"([^"]+)"',
             )
         );

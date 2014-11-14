@@ -286,7 +286,7 @@ class Ando_Html_Parser
     protected function parse_attributes($source)
     {
         $result = array();
-        $regex = Ando_Regex::create('(?<name>$name)=(?<value>$value)')->interpolate(
+        $regex = Ando_Regex::def('(?<name>$name)=(?<value>$value)')->interpolate(
             array(
                 'name' => '([\w-]+)\s*',
                 'value' => '\s*"([^"]+)"',

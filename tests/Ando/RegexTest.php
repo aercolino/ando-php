@@ -291,9 +291,9 @@ class Ando_RegexTest extends PHPUnit_Framework_TestCase
 
         $actual = new Ando_Regex('$before(?:$nest|$empty)', '@@s');
         $actual->interpolate(array(
-            'before' => Ando_Regex::create('(?<before>$before)')->interpolate(array('before' => $before))->expression(),
-            'nest' => Ando_Regex::create('(?<nest>$nest)')->interpolate(array('nest' => $nest))->expression(),
-            'empty' => Ando_Regex::create('(?<empty>$empty)')->interpolate(array('empty' => $empty))->expression(),
+            'before' => Ando_Regex::def('(?<before>$before)')->interpolate(array('before' => $before))->expression(),
+            'nest' => Ando_Regex::def('(?<nest>$nest)')->interpolate(array('nest' => $nest))->expression(),
+            'empty' => Ando_Regex::def('(?<empty>$empty)')->interpolate(array('empty' => $empty))->expression(),
         ));
         $expected = '@(?<before>(?:.*?<br>)*.*?)(?:(?<nest>(?<start><(?<tag>\w+).*?>)(?<nested>.*?)(?<end></\4>))|(?<empty>(<!--.*?-->|<!DOCTYPE\b.*?>|<\w+.*?>)))@s';
         $this->assertEquals($expected, $actual);

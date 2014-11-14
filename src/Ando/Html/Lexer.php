@@ -89,7 +89,8 @@ class Ando_Html_Lexer
      */
     protected function find_tokens()
     {
-        $regex = Ando_Regex::create('(?J)(?<comment>$comment)|(?<doctype>$doctype)|(?<void>$void)' . '|(?<script>$script)|(?<start>$start)|(?<end>$end)|(?<iews>$iews)|(?<text>$text)', '@@is')->interpolate(
+        $regex = Ando_Regex::def('(?J)(?<comment>$comment)|(?<doctype>$doctype)|(?<void>$void)'
+            . '|(?<script>$script)|(?<start>$start)|(?<end>$end)|(?<iews>$iews)|(?<text>$text)', '@@is')->interpolate(
             array(
 
                 // the browser does the same: a comment goes from a start up to the next end

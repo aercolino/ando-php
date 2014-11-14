@@ -303,7 +303,7 @@ class Ando_Regex
      *
      * @return Ando_Regex
      */
-    static public function create($template, $wrapper = '@@')
+    static public function def($template, $wrapper = '@@')
     {
         $result = new self($template, $wrapper);
         return $result;

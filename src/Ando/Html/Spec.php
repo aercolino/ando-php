@@ -2,7 +2,6 @@
 
 class Ando_Html_Spec
 {
-
     /**
      * HTML elements.
      * This is initialized here with notes only, but it is completed by the constructor.
@@ -649,13 +648,11 @@ class Ando_Html_Spec
      */
     static public function is_void_but_looks_like_a_start($name)
     {
-        if (in_array($name, array(
+        $result = in_array($name, array(
             'br',
             'hr'
-        ))) {
-            return true;
-        }
-        return false;
+        ));
+        return $result;
     }
 
     /**

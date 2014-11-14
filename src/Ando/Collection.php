@@ -18,8 +18,9 @@ class Ando_Collection
     protected $preserving_keys;
 
     /**
+     * Constructor.
      *
-     * @param string $preserve_keys
+     * @param boolean $preserve_keys
      */
     protected function __construct($preserve_keys = false)
     {
@@ -28,6 +29,9 @@ class Ando_Collection
     }
 
     /**
+     * Define a collection.
+     *
+     * @throws Ando_Exception
      *
      * @param array   $data
      * @param boolean $preserve_keys
@@ -39,7 +43,7 @@ class Ando_Collection
         $result = new self($preserve_keys);
         if (!is_null($data)) {
             if (!(is_array($data) || $data instanceof Traversable)) {
-                throw new Ando_Exception('Expected ');
+                throw new Ando_Exception('Expected an array or array-like source.');
             }
             foreach ($data as $key => $element) {
                 $result->data[$key] = $element;
@@ -54,9 +58,10 @@ class Ando_Collection
     /**
      * Get the element with the key.
      *
+     * @throws Ando_Exception
+     *
      * @param integer|string $key
      *
-     * @throws Ando_Exception
      * @return mixed
      */
     public function element($key)
@@ -84,6 +89,8 @@ class Ando_Collection
 
     /**
      * Get the value of the named property for the element with the key.
+     *
+     * @throws Ando_Exception
      *
      * @param integer|string $key
      * @param string         $name

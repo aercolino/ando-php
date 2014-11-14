@@ -87,17 +87,13 @@ class Ando_Html_Parser
     {
         $ancestors = array();
         foreach ($this->tokens as $index => $token) {
-            /**
-             * @var Ando_Html_Token $token
-             */
+            /** @var Ando_Html_Token $token */
             switch ($token->type()) {
 
                 case Ando_Html_Token::TYPE_START:
                     $ancestors = $this->fix_parent($index, $ancestors); // like P still open before opening DIV
                     $parent = count($ancestors) ? $ancestors[count($ancestors) - 1] : null;
-                    /**
-                     * @var Ando_Html_Node $parent
-                     */
+                    /** @var Ando_Html_Node $parent */
                     $data = array(
                         'index' => $token->index(),
                         'name' => $token->tag(),
@@ -116,9 +112,7 @@ class Ando_Html_Parser
 
                 case Ando_Html_Token::TYPE_END:
                     $parent = count($ancestors) ? $ancestors[count($ancestors) - 1] : null;
-                    /**
-                     * @var Ando_Html_Node $parent
-                     */
+                    /** @var Ando_Html_Node $parent */
                     if (!is_null($parent) && $parent->name() == $token->tag()) {
                         array_pop($ancestors);
                     }
@@ -126,9 +120,7 @@ class Ando_Html_Parser
 
                 case Ando_Html_Token::TYPE_VOID:
                     $parent = count($ancestors) ? $ancestors[count($ancestors) - 1] : null;
-                    /**
-                     * @var Ando_Html_Node $parent
-                     */
+                    /** @var Ando_Html_Node $parent */
                     $data = array(
                         'index' => $token->index(),
                         'name' => $token->tag(),
@@ -145,9 +137,7 @@ class Ando_Html_Parser
                 case Ando_Html_Token::TYPE_TEXT:
                 case Ando_Html_Token::TYPE_COMMENT:
                     $parent = count($ancestors) ? $ancestors[count($ancestors) - 1] : null;
-                    /**
-                     * @var Ando_Html_Node $parent
-                     */
+                    /** @var Ando_Html_Node $parent */
                     $data = array(
                         'index' => $token->index(),
                         'name' => strtoupper($token->type()),

@@ -2,7 +2,6 @@
 
 class Ando_Html_Token
 {
-
     const TYPE_COMMENT = 'comment';
     const TYPE_DOCTYPE = 'doctype';
     const TYPE_VOID = 'void';
@@ -128,5 +127,4 @@ class Ando_Html_Token
         $this->type = isset($data['type']) ? $data['type'] : null;
         $this->tag = isset($data['tag']) ? $data['tag'] : null;
     }
-
 }

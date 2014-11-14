@@ -35,10 +35,10 @@ class Ando_Regex
     const PREG_REPLACE_EVAL_MODIFIER = 'e'; // deprecated as of PHP 5.5, only works in preg_replace patterns
 
     /**
-     * These are the global modifiers of a regular expression,
-     * excluding deprecated ones.
+     * These are the global modifiers of a regular expression, excluding deprecated ones.
      * At the moment, only 'e' is deprecated.
-     * http://php.net/manual/en/reference.pcre.pattern.modifiers.php
+     *
+     * @link http://php.net/manual/en/reference.pcre.pattern.modifiers.php
      *
      * @return string
      */
@@ -52,7 +52,8 @@ class Ando_Regex
 
     /**
      * These are the local modifiers.
-     * http://php.net/manual/en/regexp.reference.internal-options.php
+     *
+     * @link http://php.net/manual/en/regexp.reference.internal-options.php
      *
      * @return string
      */
@@ -81,7 +82,8 @@ class Ando_Regex
     /**
      * Pattern for matching one non-parenthesized delimiter used to wrap
      * the pattern substring of a regular expression.
-     * http://ro1.php.net/manual/en/regexp.reference.delimiters.php
+     *
+     * @link http://ro1.php.net/manual/en/regexp.reference.delimiters.php
      *
      * @return string
      */
@@ -106,8 +108,7 @@ class Ando_Regex
     /**
      * True if a string is a regular expression.
      *
-     * @param string $regex
-     *            The string to test.
+     * @param string $regex The string to test.
      *
      * @return bool
      */
@@ -120,18 +121,16 @@ class Ando_Regex
     /**
      * Pattern for matching a generic quoted string.
      * By default it's a single quoted string with an escaping backslash.
-     * http://www.regular-expressions.info/examplesprogrammer.html
+     *
+     * @link http://www.regular-expressions.info/examplesprogrammer.html
      *
      * TODO: integrate alternative templates like '([$delimiters])(?:(?!\1).)*\1'
      * Notice that the above template is a work in progress because it lacks
      * support for the escaping character.
      *
-     * @param string $begin
-     *            Begin character.
-     * @param string $end
-     *            End character.
-     * @param string $escape
-     *            Escaping character.
+     * @param string $begin  Begin character.
+     * @param string $end    End character.
+     * @param string $escape Escaping character.
      *
      * @return string
      */
@@ -193,12 +192,10 @@ class Ando_Regex
     /**
      * Constructor.
      *
-     * @param string           $template
-     *            A pattern, possibly with $name variables to interpolate later.
-     * @param null|bool|string $wrapper
-     *            Use null to not treat the wrapper in the template, if any;
-     *            Use false to use the wrapper in the template, if any;
-     *            Use a string (even empty) to use such a wrapper.
+     * @param string           $template A pattern, possibly with $name variables to interpolate later.
+     * @param null|bool|string $wrapper  Use null to not treat the wrapper in the template, if any;
+     *                                   Use false to use the wrapper in the template, if any;
+     *                                   Use a string (even empty) to use such a wrapper.
      */
     public function __construct($template, $wrapper = null)
     {
@@ -216,6 +213,8 @@ class Ando_Regex
 
     /**
      * Set the template.
+     *
+     * @throws Ando_Exception
      *
      * @param string $template
      *
@@ -242,6 +241,8 @@ class Ando_Regex
 
     /**
      * Set the wrapper.
+     *
+     * @throws Ando_Exception
      *
      * @param null|string $wrapper
      *
@@ -370,10 +371,8 @@ class Ando_Regex
     /**
      * Unwrap.
      *
-     * @param
-     *            $expression
-     * @param string $wrapper
-     *            (by reference) Used only to return the unwrapped wrapper.
+     * @param        $expression
+     * @param string $wrapper (by reference) Used only to return the unwrapped wrapper.
      *
      * @return string
      */
@@ -402,10 +401,10 @@ class Ando_Regex
     /**
      * Wrap.
      *
-     * @param
-     *            $expression
-     * @param
-     *            $wrapper
+     * @throws Ando_Exception
+     *
+     * @param $expression
+     * @param $wrapper
      *
      * @return string
      */
@@ -440,8 +439,7 @@ class Ando_Regex
     /**
      * Substitute a single occurrence of a variable name into the template with its value.
      *
-     * @param
-     *            $matches
+     * @param $matches
      *
      * @return mixed
      */
@@ -464,8 +462,7 @@ class Ando_Regex
      *
      * WARNING: It only supports backreferences of the form <code>\1 .. \99</code>
      *
-     * @param
-     *            $matches
+     * @param $matches
      *
      * @return string
      */
@@ -503,24 +500,16 @@ class Ando_Regex
      * @param string|array $pattern
      * @param callable     $callback
      * @param string|array $subject
-     * @param int          $limit
-     *            (optional)
-     * @param int          $count
-     *            (optional)
+     * @param int          $limit (optional)
+     * @param int          $count (optional)
      *
      * @return null|string|array
      */
     static public function replace($pattern, $callback, $subject, $limit = -1, &$count = 0)
     {
 
-        $limit = min(array(
-            -1,
-            $limit
-        ));
-        $count = min(array(
-            0,
-            $count
-        ));
+        $limit = min(array(-1, $limit));
+        $count = min(array(0, $count));
         $result = $subject;
 
         if (0 <= $limit && $limit <= $count) {

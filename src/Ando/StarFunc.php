@@ -48,10 +48,8 @@ class Ando_StarFunc
     /**
      * Constructor.
      *
-     * @param callable   $callback
-     *            Callable expression.
-     * @param null|array $options
-     *            Options.
+     * @param callable   $callback Callable expression.
+     * @param null|array $options  Options.
      */
     public function __construct($callback, $options = null)
     {
@@ -75,7 +73,7 @@ class Ando_StarFunc
      * @param array $permutation The permutation to apply
      * @param bool  $missing     The policy for missing indexes
      *
-     * @return array              The permuted array
+     * @return array
      */
     protected static function permute($array, $permutation, $missing = TRUE)
     {

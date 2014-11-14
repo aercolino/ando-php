@@ -2,7 +2,6 @@
 
 class Ando_Html_Lexer
 {
-
     /**
      * HTML to parse.
      *
@@ -67,7 +66,6 @@ class Ando_Html_Lexer
             default:
                 throw new Ando_Exception('Invalid parser regex match.');
         }
-
 
         $index = count($this->tokens);
         $data = array(

@@ -2,7 +2,6 @@
 
 class Ando_Html_Node
 {
-
     /**
      * Index of the node.
      * If the node comes from a token, it's the same index.
@@ -74,9 +73,7 @@ class Ando_Html_Node
     {
         $result = $this->ancestors;
         if (!$and_parent) {
-            $result = array_values(array_diff($result, array(
-                $this->parent
-            )));
+            $result = array_values(array_diff($result, array($this->parent)));
         }
         return $result;
     }
@@ -218,9 +215,7 @@ class Ando_Html_Node
         }
         $result = $this->parent->children;
         if (!$and_self) {
-            $result = array_values(array_diff($result, array(
-                $this
-            )));
+            $result = array_values(array_diff($result, array($this)));
         }
         return $result;
     }

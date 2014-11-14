@@ -4,7 +4,10 @@ class Ando_Html_Spec
 {
 
     /**
-     * from http://www.w3schools.com/tags/ on 2014/10/17 13:00 UTC
+     * HTML elements.
+     * This is initialized here with notes only, but it is completed by the constructor.
+     *
+     * @link http://www.w3schools.com/tags/ (taken at 2014/10/17 13:00 UTC)
      *
      * @var array
      */
@@ -387,6 +390,7 @@ class Ando_Html_Spec
     );
 
     /**
+     * Categories each HTML element belongs to (can be more than one).
      *
      * @var array
      */
@@ -409,12 +413,14 @@ class Ando_Html_Spec
     );
 
     /**
+     * List of HTML elements per category.
      *
      * @var array
      */
     protected $category = array();
 
     /**
+     * Set each category to that list.
      *
      * @param string $category
      * @param string $list
@@ -439,6 +445,7 @@ class Ando_Html_Spec
     }
 
     /**
+     * Set all categories to their respective lists.
      */
     protected function categories_set()
     {
@@ -473,6 +480,7 @@ class Ando_Html_Spec
     }
 
     /**
+     * Constructor (singleton)
      */
     protected function __construct()
     {
@@ -500,6 +508,7 @@ class Ando_Html_Spec
     }
 
     /**
+     * All the HTML info about an element.
      *
      * @param string $name
      *

@@ -19,6 +19,8 @@ class Ando_Utf8
      *
      * @link http://andowebsit.es/blog/noteslog.com/post/escaping-and-unescaping-utf-8-characters-in-php/
      *
+     * @throws Ando_Exception If the code point of any char in $value is not unicode
+     *
      * @param string $value
      * @param array  $options
      *            'escapeControlChars' => boolean (default: TRUE),
@@ -29,8 +31,6 @@ class Ando_Utf8
      *            ),
      *            'extendedUseSurrogate' => boolean (default: true),
      *
-     * @throws Ando_Exception If the code point of any char in $value is
-     *         not unicode
      * @return string
      */
     public static function escape($value, array $options = array())
@@ -146,10 +146,10 @@ class Ando_Utf8
      * TODO reject overlong sequences in $utf8Char
      *
      * @link http://andowebsit.es/blog/noteslog.com/post/escaping-and-unescaping-utf-8-characters-in-php/
+     * @throws Ando_Exception If the code point of $utf8Char is not unicode
      *
      * @param string $utf8Char
      *
-     * @throws Ando_Exception If the code point of $utf8Char is not unicode
      * @return integer
      */
     public static function utf8CharToCodePoint($utf8Char)
@@ -232,10 +232,10 @@ class Ando_Utf8
      *
      * @link http://andowebsit.es/blog/noteslog.com/post/escaping-and-unescaping-utf-8-characters-in-php/
      * @link http://en.wikipedia.org/wiki/UTF-16/UCS-2
+     * @throws Ando_Exception If the code point of $utf8Char is not extended unicode
      *
      * @param string $utf8Char
      *
-     * @throws Ando_Exception If the code point of $utf8Char is not extended unicode
      * @return array
      */
     public static function utf8CharToSurrogatePair($utf8Char)
@@ -335,13 +335,13 @@ class Ando_Utf8
     /**
      * Compute the UTF-8 character of a given code point
      *
-     * If available, use the multibye string function mb_convert_encoding
+     * If available, use the multibyte string function mb_convert_encoding
      *
      * @link http://andowebsit.es/blog/noteslog.com/post/escaping-and-unescaping-utf-8-characters-in-php/
+     * @throws Ando_Exception
      *
      * @param integer $codePoint
      *
-     * @throws Ando_Exception if the code point is not unicode
      * @return string
      */
     public static function utf8CharFromCodePoint($codePoint)
@@ -415,10 +415,10 @@ class Ando_Utf8
      *
      * @link http://andowebsit.es/blog/noteslog.com/post/escaping-and-unescaping-utf-8-characters-in-php/
      * @link http://en.wikipedia.org/wiki/UTF-16/UCS-2
+     * @throws Ando_Exception If the surrogate pair is not extended unicode
      *
      * @param array $surrogatePair
      *
-     * @throws Ando_Exception If the surrogate pair is not extended unicode
      * @return string
      */
     public static function utf8CharFromSurrogatePair($surrogatePair)
@@ -441,9 +441,10 @@ class Ando_Utf8
      * Validate filters.
      * If there are filters return true, else false
      *
+     * @throws Ando_Exception If there are malformed filters
+     *
      * @param array $options
      *
-     * @throws Ando_Exception If there are malformed filters
      * @return boolean
      */
     protected static function validateFilters($options)

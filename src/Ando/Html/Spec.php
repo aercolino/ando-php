@@ -389,94 +389,62 @@ class Ando_Html_Spec
     );
 
     /**
-     * Categories each HTML element belongs to (can be more than one).
+     * List of HTML elements per category.
      *
      * @link https://html.spec.whatwg.org/multipage/dom.html#kinds-of-content (taken at 2014/10/17 13:00 UTC)
      *
      * @var array
      */
-    protected $categories = array(
-        'metadata',
-        'flow',
-        'sectioning',
-        'heading',
-        'phrasing',
-        'embedded',
-        'interactive',
-        'form-associated',
-        'listed',
-        'submittable',
-        'resettable',
-        'reassociateable',
-        'labelable',
-        'palpable',
-        'script-supporting'
+    protected $category = array(
+        'metadata'          => 'base, command, link, meta, noscript, script, style, title',
+        'flow'              => 'a, abbr, address, article, aside, audio, b,bdo, bdi, blockquote, br, button, canvas, cite, code, command, data, datalist, del, details, dfn, div, dl, em, embed, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, i, iframe, img, input, ins, kbd, keygen, label, main, map, mark, math, menu, meter, nav, noscript, object, ol, output, p, pre, progress, q, ruby, s, samp, script, section, select, small, span, strong, sub, sup, svg, table, template, textarea, time, ul, var, video, wbr, text',
+        'sectioning'        => 'article, aside, nav, section',
+        'heading'           => 'h1, h2, h3, h4, h5, h6, hgroup',
+        'phrasing'          => 'abbr, audio, b, bdo, br, button, canvas, cite, code, command, datalist, dfn, em, embed, i, iframe, img, input, kbd, keygen, label, mark, math, meter, noscript, object, output, progress, q, ruby, samp, script, select, small, span, strong, sub, sup, svg, textarea, time, var, video, wbr, text',
+        'embedded'          => 'audio, canvas, embed, iframe, img, math, object, svg, video',
+        'interactive'       => 'a, button, details, embed, iframe, keygen, label, select, textarea',
+
+        'form-associated'   => 'button, fieldset, input, keygen, label, object, output, select, textarea, img',
+        'listed'            => 'button, fieldset, input, keygen, object, output, select, textarea',
+        'submittable'       => 'button, input, keygen, object, select, textarea',
+        'resettable'        => 'input, keygen, output, select, textarea',
+        'reassociateable'   => 'button, fieldset, input, keygen, label, object, output, select, textarea',
+        'labelable'         => 'button, keygen, meter, output, progress, select, textarea',
+
+        'transparent'       => 'ins, del',  // retrieved from "https://html.spec.whatwg.org/multipage/semantics.html" (taken at 2014/11/15 14:00 UTC)
+                                            // using <code>var a=[]; $('dd').each(function(){if($(this).text()=='Transparent.') a.push(this);}); a;</code>
+                                            // (after injecting jQuery from the browser's console)
+        'palpable'          => 'a, abbr, address, article, aside, controls, b, bdi, bdo, blockquote, button, canvas, cite, code, data, details, dfn, div, em, embed, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, i, iframe, img, ins, kbd, keygen, label, main, map, mark, math, meter, nav, object, output, p, pre, progress, q, ruby, s, samp, section, select, small, span, strong, sub, sup, svg, table, textarea, time, u, var, video, text',
+        'script-supporting' => 'script, template',
+
+        'flow-if'           => 'area if descendant of map element, link if itemprop attribute present, meta if itemprop attribute present, style if itemprop attribute present',
+        'phrasing-if'       => 'area if descendant of map element, link if itemprop attribute present, meta if itemprop attribute present',
+        'interactive-if'    => 'audio if controls attribute present, img if usemap attribute present, input if type attribute not hidden, object if usemap attribute present, video if controls attribute present',
+        'labelable-if'      => 'input if type attribute not hidden',
+        'palpable-if'       => 'audio if controls attribute present, dl if children include at least one name-value group, input if type attribute not hidden, menu if type attribute toolbar, ol if children include at least one li element, ul if children include at least one li element',
     );
 
     /**
-     * List of HTML elements per category.
-     *
-     * @var array
-     */
-    protected $category = array();
-
-    /**
      * Set each category to that list.
-     *
-     * @param string $category
-     * @param string $list
      */
-    protected function category_set($category, $list)
+    protected function category_set()
     {
-        $list = explode(', ', $list);
-        $this->category[$category] = $list;
-        foreach ($list as $name) {
-            $if = ' if ';
-            $if_offset = strpos($name, $if);
-            if (-1 < $if_offset) {
-                $real_name = substr($name, 0, $if_offset);
-                $real_category = $category . ' ' . substr($name, $if_offset + strlen($if));
-            } else {
-                $real_name = $name;
-                $real_category = $category;
+        foreach ($this->category as $category => $list) {
+            $list = explode(', ', $list);
+            $this->category[$category] = $list;
+            foreach ($list as $name) {
+                $if = ' if ';
+                $if_offset = strpos($name, $if);
+                if (-1 < $if_offset) {
+                    $real_name = substr($name, 0, $if_offset);
+                    $real_category = $category . ' ' . substr($name, $if_offset + strlen($if));
+                } else {
+                    $real_name = $name;
+                    $real_category = $category;
+                }
+                $this->elements[$real_name]['categories'][] = $real_category;
             }
-            $this->elements[$real_name]['categories'][] = $real_category;
         }
-    }
-
-    /**
-     * Set all categories to their respective lists.
-     * 
-     * @link https://html.spec.whatwg.org/multipage/dom.html#kinds-of-content (taken at 2014/10/17 13:00 UTC)
-     */
-    protected function set_all_categories()
-    {
-        $this->category_set('metadata',          'base, command, link, meta, noscript, script, style, title');
-        $this->category_set('flow',              'a, abbr, address, article, aside, audio, b,bdo, bdi, blockquote, br, button, canvas, cite, code, command, data, datalist, del, details, dfn, div, dl, em, embed, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, i, iframe, img, input, ins, kbd, keygen, label, main, map, mark, math, menu, meter, nav, noscript, object, ol, output, p, pre, progress, q, ruby, s, samp, script, section, select, small, span, strong, sub, sup, svg, table, template, textarea, time, ul, var, video, wbr, text');
-        $this->category_set('sectioning',        'article, aside, nav, section');
-        $this->category_set('heading',           'h1, h2, h3, h4, h5, h6, hgroup');
-        $this->category_set('phrasing',          'abbr, audio, b, bdo, br, button, canvas, cite, code, command, datalist, dfn, em, embed, i, iframe, img, input, kbd, keygen, label, mark, math, meter, noscript, object, output, progress, q, ruby, samp, script, select, small, span, strong, sub, sup, svg, textarea, time, var, video, wbr, text');
-        $this->category_set('embedded',          'audio, canvas, embed, iframe, img, math, object, svg, video');
-        $this->category_set('interactive',       'a, button, details, embed, iframe, keygen, label, select, textarea');
-
-        $this->category_set('form-associated',   'button, fieldset, input, keygen, label, object, output, select, textarea, img');
-        $this->category_set('listed',            'button, fieldset, input, keygen, object, output, select, textarea');
-        $this->category_set('submittable',       'button, input, keygen, object, select, textarea');
-        $this->category_set('resettable',        'input, keygen, output, select, textarea');
-        $this->category_set('reassociateable',   'button, fieldset, input, keygen, label, object, output, select, textarea');
-        $this->category_set('labelable',         'button, keygen, meter, output, progress, select, textarea');
-
-        $this->category_set('transparent',       'ins, del');  // retrieved from "https://html.spec.whatwg.org/multipage/semantics.html" (taken at 2014/11/15 14:00 UTC)
-                                                               // using <code>var a=[]; $('dd').each(function(){if($(this).text()=='Transparent.') a.push(this);}); a;</code>
-                                                               // (after injecting jQuery from the browser's console)
-        $this->category_set('palpable',          'a, abbr, address, article, aside, controls, b, bdi, bdo, blockquote, button, canvas, cite, code, data, details, dfn, div, em, embed, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, i, iframe, img, ins, kbd, keygen, label, main, map, mark, math, meter, nav, object, output, p, pre, progress, q, ruby, s, samp, section, select, small, span, strong, sub, sup, svg, table, textarea, time, u, var, video, text');
-        $this->category_set('script-supporting', 'script, template');
-
-        $this->category_set('flow-if',           'area if descendant of map element, link if itemprop attribute present, meta if itemprop attribute present, style if itemprop attribute present');
-        $this->category_set('phrasing-if',       'area if descendant of map element, link if itemprop attribute present, meta if itemprop attribute present');
-        $this->category_set('interactive-if',    'audio if controls attribute present, img if usemap attribute present, input if type attribute not hidden, object if usemap attribute present, video if controls attribute present');
-        $this->category_set('labelable-if',      'input if type attribute not hidden');
-        $this->category_set('palpable-if',       'audio if controls attribute present, dl if children include at least one name-value group, input if type attribute not hidden, menu if type attribute toolbar, ol if children include at least one li element, ul if children include at least one li element');
     }
 
     /**
@@ -512,11 +480,23 @@ class Ando_Html_Spec
     );
 
     /**
+     * Set each category to that list.
+     */
+    protected function semantics_set()
+    {
+        foreach ($this->semantics as $category => $list) {
+            $list = explode(', ', $list);
+            $this->semantics[$category] = $list;
+        }
+    }
+
+    /**
      * Constructor (singleton)
      */
     protected function __construct()
     {
-        $this->set_all_categories();
+        $this->category_set();
+        $this->semantics_set();
     }
 
     /**
@@ -573,7 +553,8 @@ class Ando_Html_Spec
         if (!isset($instance->elements[$name])) {
             throw new Ando_Exception('Expected a valid HTML element name. (got instead "' . $name . '")');
         }
-        if (!in_array($category, $instance->categories)) {
+        $categories = array_keys($instance->category);
+        if (!in_array($category, $categories)) {
             throw new Ando_Exception('Expected a valid HTML element category. (got instead "' . $category . '")');
         }
         if (in_array($category, $instance->elements[$name]['categories'])) {

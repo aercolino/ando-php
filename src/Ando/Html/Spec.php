@@ -485,31 +485,29 @@ class Ando_Html_Spec
      * @var array
      */
     protected $semantics = array(
-        /*
-         */
         'root'       => 'html',
-        /*
-         */
+
         'metadata'   => 'head, title, base, link, meta, style',
+
         /*
          * These all have a context "Where flow content is expected." except for
          * 'body', which has "As the second element in an html element."
          * 'h1' to 'h6' have an additional context "As a child of an hgroup element."
          */
         'section'    => 'body, article, section, nav, aside, h1, h2, h3, h4, h5, h6, hgroup, header, footer, address',
+
         /*
          * These all have a context "Where flow content is expected."
          */
         'grouping'   => 'p, hr, pre, blockquote, ol, ul, li, dl, dt, dd, figure, figcaption, main, div',
+
         /*
          * These all have a context "Where phrasing content is expected."
          */
         'text_level' => 'a, em, strong, small, s, cite, q, dfn, abbr, ruby, rt, rp, data, time, code, var, samp, kbd, sub, i, b, u, mark, bdi, bdo, span, br, wbr',
-        /*
-         */
+
         'link'       => 'link, a, area',
-        /*
-         */
+
         'edit'       => 'ins, del',
     );
 
@@ -731,9 +729,7 @@ class Ando_Html_Spec
     }
 
     /**
-     * True if node has valid context.
-     *
-     * @throws Ando_Exception
+     * True if the html node has valid context.
      *
      * @param Ando_Html_Node $node
      *
@@ -741,17 +737,12 @@ class Ando_Html_Spec
      */
     protected function html_has_valid_context($node)
     {
-        if ($node->name() != 'html') {
-            throw new Ando_Exception('Expected a "html" node. (got instead "' . $node->name() . '")');
-        }
         $result = $node->is_root();
         return $result;
     }
 
     /**
-     * True if the node has valid content.
-     *
-     * @throws Ando_Exception
+     * True if the html node has valid content.
      *
      * @param Ando_Html_Node $node
      *
@@ -759,9 +750,6 @@ class Ando_Html_Spec
      */
     protected function html_has_valid_content($node)
     {
-        if ($node->name() != 'html') {
-            throw new Ando_Exception('Expected a "html" node. (got instead "' . $node->name() . '")');
-        }
         $children = $node->children();
         $result = count($children) == 2 && $children[0]->name() == 'head' && $children[1]->name() == 'body';
         return $result;

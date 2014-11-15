@@ -480,6 +480,40 @@ class Ando_Html_Spec
     }
 
     /**
+     * @link https://html.spec.whatwg.org/multipage/semantics.html
+     *
+     * @var array
+     */
+    protected $semantics = array(
+        /*
+         */
+        'root'       => 'html',
+        /*
+         */
+        'metadata'   => 'head, title, base, link, meta, style',
+        /*
+         * These all have a context "Where flow content is expected." except for
+         * 'body', which has "As the second element in an html element."
+         * 'h1' to 'h6' have an additional context "As a child of an hgroup element."
+         */
+        'section'    => 'body, article, section, nav, aside, h1, h2, h3, h4, h5, h6, hgroup, header, footer, address',
+        /*
+         * These all have a context "Where flow content is expected."
+         */
+        'grouping'   => 'p, hr, pre, blockquote, ol, ul, li, dl, dt, dd, figure, figcaption, main, div',
+        /*
+         * These all have a context "Where phrasing content is expected."
+         */
+        'text_level' => 'a, em, strong, small, s, cite, q, dfn, abbr, ruby, rt, rp, data, time, code, var, samp, kbd, sub, i, b, u, mark, bdi, bdo, span, br, wbr',
+        /*
+         */
+        'link'       => 'link, a, area',
+        /*
+         */
+        'edit'       => 'ins, del',
+    );
+
+    /**
      * Constructor (singleton)
      */
     protected function __construct()

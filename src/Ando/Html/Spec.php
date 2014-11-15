@@ -426,9 +426,8 @@ class Ando_Html_Spec
      */
     protected function category_set($category, $list)
     {
-        $instance = self::instance();
         $list = explode(', ', $list);
-        $instance->category[$category] = $list;
+        $this->category[$category] = $list;
         foreach ($list as $name) {
             $if = ' if ';
             $if_offset = strpos($name, $if);
@@ -439,7 +438,7 @@ class Ando_Html_Spec
                 $real_name = $name;
                 $real_category = $category;
             }
-            $instance->elements[$real_name]['categories'][] = $real_category;
+            $this->elements[$real_name]['categories'][] = $real_category;
         }
     }
 
@@ -593,7 +592,7 @@ class Ando_Html_Spec
                     'palpable'
                 ))) {
                     $attrs = $node->attributes();
-                    $result = $attrs['type'] != 'hidden';
+                    $result = !isset($attrs['type']) || $attrs['type'] != 'hidden';
                 }
                 break;
 

@@ -444,8 +444,10 @@ class Ando_Html_Spec
 
     /**
      * Set all categories to their respective lists.
+     * 
+     * @link https://html.spec.whatwg.org/multipage/dom.html#kinds-of-content (taken at 2014/10/17 13:00 UTC)
      */
-    protected function categories_set()
+    protected function set_all_categories()
     {
         $this->category_set('metadata', 'base, command, link, meta, noscript, script, style, title');
         $this->category_set('flow',
@@ -482,7 +484,7 @@ class Ando_Html_Spec
      */
     protected function __construct()
     {
-        $this->categories_set();
+        $this->set_all_categories();
     }
 
     /**
@@ -559,29 +561,29 @@ class Ando_Html_Spec
             case 'link':
             case 'meta':
                 if ($category == 'flow' || $category == 'phrasing') {
-                    $attrs = $node->attributes();
-                    $result = isset($attrs['itemprop']);
+                    $attributes = $node->attributes();
+                    $result = isset($attributes['itemprop']);
                 }
                 break;
 
             case 'style':
                 if ($category == 'flow') {
-                    $attrs = $node->attributes();
-                    $result = isset($attrs['itemprop']);
+                    $attributes = $node->attributes();
+                    $result = isset($attributes['itemprop']);
                 }
                 break;
 
             case 'audio':
                 if ($category == 'interactive' || $category == 'palpable') {
-                    $attrs = $node->attributes();
-                    $result = isset($attrs['controls']);
+                    $attributes = $node->attributes();
+                    $result = isset($attributes['controls']);
                 }
                 break;
 
             case 'img':
                 if ($category == 'interactive') {
-                    $attrs = $node->attributes();
-                    $result = isset($attrs['usemap']);
+                    $attributes = $node->attributes();
+                    $result = isset($attributes['usemap']);
                 }
                 break;
 
@@ -591,22 +593,22 @@ class Ando_Html_Spec
                     'labelable',
                     'palpable'
                 ))) {
-                    $attrs = $node->attributes();
-                    $result = !isset($attrs['type']) || $attrs['type'] != 'hidden';
+                    $attributes = $node->attributes();
+                    $result = !isset($attributes['type']) || $attributes['type'] != 'hidden';
                 }
                 break;
 
             case 'object':
                 if ($category == 'interactive') {
-                    $attrs = $node->attributes();
-                    $result = isset($attrs['usemap']);
+                    $attributes = $node->attributes();
+                    $result = isset($attributes['usemap']);
                 }
                 break;
 
             case 'video':
                 if ($category == 'interactive') {
-                    $attrs = $node->attributes();
-                    $result = isset($attrs['controls']);
+                    $attributes = $node->attributes();
+                    $result = isset($attributes['controls']);
                 }
                 break;
 
@@ -619,8 +621,8 @@ class Ando_Html_Spec
 
             case 'menu':
                 if ($category == 'palpable') {
-                    $attrs = $node->attributes();
-                    $result = $attrs['type'] == 'toolbar';
+                    $attributes = $node->attributes();
+                    $result = $attributes['type'] == 'toolbar';
                 }
                 break;
 

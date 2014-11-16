@@ -390,7 +390,7 @@ class Ando_Html_Spec
 
     protected $transparent = 'a, ins, del, object, video, audio, map, noscript, canvas';
 
-    protected function transparent_set() {
+    protected function transparent_init() {
         $this->transparent = explode(', ', $this->transparent);
     }
 
@@ -430,7 +430,7 @@ class Ando_Html_Spec
     /**
      * Set each category to that list.
      */
-    protected function category_set()
+    protected function category_init()
     {
         foreach ($this->category as $category => $list) {
             $list = explode(', ', $list);
@@ -485,7 +485,7 @@ class Ando_Html_Spec
     /**
      * Set each category to that list.
      */
-    protected function semantics_set()
+    protected function semantics_init()
     {
         foreach ($this->semantics as $category => $list) {
             $list = explode(', ', $list);
@@ -498,9 +498,9 @@ class Ando_Html_Spec
      */
     protected function __construct()
     {
-        $this->category_set();
-        $this->semantics_set();
-        $this->transparent_set();
+        $this->category_init();
+        $this->semantics_init();
+        $this->transparent_init();
     }
 
     /**

@@ -411,7 +411,7 @@ class Ando_Html_Spec
         'reassociateable'   => 'button, fieldset, input, keygen, label, object, output, select, textarea',
         'labelable'         => 'button, keygen, meter, output, progress, select, textarea',
 
-        'transparent'       => 'a, ins, del',
+        'transparent'       => 'a, ins, del, object, video, audio, map, noscript, canvas',
         'palpable'          => 'a, abbr, address, article, aside, controls, b, bdi, bdo, blockquote, button, canvas, cite, code, data, details, dfn, div, em, embed, fieldset, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, i, iframe, img, ins, kbd, keygen, label, main, map, mark, math, meter, nav, object, output, p, pre, progress, q, ruby, s, samp, section, select, small, span, strong, sub, sup, svg, table, textarea, time, u, var, video, text',
         'script-supporting' => 'script, template',
 

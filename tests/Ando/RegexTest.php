@@ -291,12 +291,12 @@ class Ando_RegexTest extends PHPUnit_Framework_TestCase
 
         $actual = new Ando_Regex('$before(?:$nest|$empty)', '@@s');
         $actual->interpolate(array(
-            'before' => Ando_Regex::def('(?<before>$before)')->interpolate(array('before' => $before))->expression(),
-            'nest' => Ando_Regex::def('(?<nest>$nest)')->interpolate(array('nest' => $nest))->expression(),
-            'empty' => Ando_Regex::def('(?<empty>$empty)')->interpolate(array('empty' => $empty))->expression(),
+            'before' => Ando_Regex::def('(?<before>$before)', null)->interpolate(array('before' => $before)),
+            'nest' => Ando_Regex::def('(?<nest>$nest)', null)->interpolate(array('nest' => $nest)),
+            'empty' => Ando_Regex::def('(?<empty>$empty)', null)->interpolate(array('empty' => $empty)),
         ));
         $expected = '@(?<before>(?:.*?<br>)*.*?)(?:(?<nest>(?<start><(?<tag>\w+).*?>)(?<nested>.*?)(?<end></\4>))|(?<empty>(<!--.*?-->|<!DOCTYPE\b.*?>|<\w+.*?>)))@s';
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals($expected, (string) $actual);
     }
 
     public function test_wrong_regex_is_not_matchable()
@@ -325,11 +325,9 @@ class Ando_RegexTest extends PHPUnit_Framework_TestCase
     }
 
 	public function test_count_captures() {
-		$this->assertEquals(0, Ando_Regex::count_captures('aaa\(bbb\)ccc[(x)]ddd'));
-	}
+		$this->assertEquals( 0, Ando_Regex::count_captures( 'aaa\(bbb\)ccc[(x)]ddd' ) );
 
-	public function test_count_groups() {
-		$this->assertEquals(0, Ando_Regex::count_groups('aaa\(bbb\)ccc[(x)]ddd'));
+		$this->assertEquals( 8, Ando_Regex::count_captures( '(?<before>(?:.*?<br>)*.*?)(?:(?<nest>(?<start><(?<tag>\w+).*?>)(?<nested>.*?)(?<end></\4>))|(?<empty>(<!--.*?-->|<!DOCTYPE\b.*?>|<\w+.*?>)))' ) );
 	}
 
 }

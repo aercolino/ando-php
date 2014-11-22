@@ -497,23 +497,6 @@ class Ando_Regex
     }
 
     /**
-     * Number of capturing groups.
-     *
-     * WARNING: It only supports named groups of the form <code>(?<name>...)</code>
-     *
-     * @param string $valid_expression
-     *
-     * @return integer
-     */
-    static public function count_captures($valid_expression)
-    {
-        $no_escaped_chars = preg_replace('@\\\\.@', '%', $valid_expression);
-        $no_char_class = preg_replace('@\[.*?\]@', '%', $no_escaped_chars);
-        $result = preg_match_all('@\(\?\<\w+\>|\((?!\?)@', $no_char_class);
-        return $result === false ? 0 : $result;
-    }
-
-    /**
      * Like a standard preg_replace_callback() but passing to the callback the matches
      * found using a standard preg_match() with the PREG_OFFSET_CAPTURE flag.
      *
@@ -787,13 +770,18 @@ class Ando_Regex
 	 *
 	 * TODO verify that: (?:a) is not a capturing group but neither (?i) is, nor (?i:a)
 	 *
+	 * TODO fix: this count_captures returns the same number as count($matches) when preg_match_all is used
+	 *   BUT for numbered backreferences we must ignore named groups because each of them (if they are not repeated)
+	 *   adds both a numerical and a string key to $matches, but we only want to consider the numerical key !!
+	 *   THAT is why this count_captures doesn't work OK for fixing numbered backreferences...
+	 *
 	 * @param string $pattern
 	 * @param array  $named_groups
 	 * @param array  $numbered_groups
 	 *
 	 * @return integer
 	 */
-	static public function count_groups( $pattern, &$named_groups = array(), &$numbered_groups = array() )
+	static public function count_captures( $pattern, &$named_groups = array(), &$numbered_groups = array() )
 	{
 		$result = self::remove_escaped_chars($pattern);
 		$result = self::count_groups_ignoring_hellternations($result, $named_groups, $numbered_groups);

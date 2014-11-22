@@ -505,9 +505,9 @@ class Ando_Regex
      *
      * @return integer
      */
-    static protected function count_captures($valid_expression)
+    static public function count_captures($valid_expression)
     {
-        $no_escaped_chars = preg_replace('@\\.@', '%', $valid_expression);
+        $no_escaped_chars = preg_replace('@\\\\.@', '%', $valid_expression);
         $no_char_class = preg_replace('@\[.*?\]@', '%', $no_escaped_chars);
         $result = preg_match_all('@\(\?\<\w+\>|\((?!\?)@', $no_char_class);
         return $result === false ? 0 : $result;
@@ -591,6 +591,8 @@ class Ando_Regex
 	 * This helps to greatly simplify matching against regular expressions because
 	 * all remaining chars are either special chars or innocuous chars.
 	 *
+	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+	 *
 	 * @param string $pattern
 	 *
 	 * @return string
@@ -610,9 +612,11 @@ class Ando_Regex
 	}
 
 	/**
-	 * Count repeated names, where each name is at $named_groups[i][1][0], with 0<i<count($named_groups).
+	 * Count repeated names, where each name is at $named_groups[i][1][0], with 0 <= i < count($named_groups).
 	 *
-	 * @param array $named_groups Matches from preg_match_all with PREG_SET_ORDER | PREG_OFFSET_CAPTURE
+	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+	 *
+	 * @param array $named_groups Matches from preg_match_all with PREG_SET_ORDER | PREG_OFFSET_CAPTURE.
 	 *
 	 * @return number
 	 */
@@ -638,6 +642,8 @@ class Ando_Regex
 	 * Returns how many groups (numbered or named) are captured in the given $pattern,
 	 * ignoring hellternations (?|...|...)
 	 * NOTE: the given $pattern is assumed to not contain escaped chars.
+	 *
+	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
 	 *
 	 * @param string $pattern
 	 * @param array  $named_groups
@@ -668,7 +674,7 @@ class Ando_Regex
 		$numbered_groups_count += $named_groups_count;
 
 		$repeated_names_count = self::count_repeated_names($named_groups);
-		// repeated names (if any) only count once
+		// Repeated names (if any) only count once, thus subtract all found repetitions.
 		$named_groups_count -= $repeated_names_count;
 
 		$result = $numbered_groups_count + $named_groups_count;
@@ -678,6 +684,8 @@ class Ando_Regex
 	/**
 	 * Returns the hellternations which are siblings to each other.
 	 * NOTE: the given $pattern is assumed to not contain escaped chars.
+	 *
+	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
 	 *
 	 * @throws Ando_Exception
 	 *
@@ -731,6 +739,8 @@ class Ando_Regex
 	 * Explodes an alternation on outer pipes.
 	 * NOTE: the given $pattern is assumed to not contain escaped chars.
 	 *
+	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+	 *
 	 * @throws Ando_Exception
 	 *
 	 * @param string $pattern a string with balanced (possibly nested) parentheses and pipes
@@ -773,6 +783,8 @@ class Ando_Regex
 	/**
 	 * Returns how many groups (numbered or named) there are in the given $pattern
 	 *
+	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+	 *
 	 * TODO verify that: (?:a) is not a capturing group but neither (?i) is, nor (?i:a)
 	 *
 	 * @param string $pattern
@@ -781,7 +793,7 @@ class Ando_Regex
 	 *
 	 * @return integer
 	 */
-	static protected function count_groups( $pattern, &$named_groups, &$numbered_groups )
+	static public function count_groups( $pattern, &$named_groups = array(), &$numbered_groups = array() )
 	{
 		$result = self::remove_escaped_chars($pattern);
 		$result = self::count_groups_ignoring_hellternations($result, $named_groups, $numbered_groups);

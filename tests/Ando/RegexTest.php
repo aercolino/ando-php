@@ -301,17 +301,17 @@ class Ando_RegexTest extends PHPUnit_Framework_TestCase
 
     public function test_wrong_regex_is_not_matchable()
     {
-        $this->assertFalse(Ando_Regex::is_matchable('@@o'));
+        $this->assertFalse(Ando_Regex::is_valid('@@o'));
     }
 
-    public function test_always_matching_regex_is_matchable()
+    public function test_always_matching_regex_is_valid()
     {
-        $this->assertTrue(Ando_Regex::is_matchable('@@'));
+        $this->assertTrue(Ando_Regex::is_valid('@@'));
     }
 
-    public function test_never_matching_regex_is_matchable()
+    public function test_never_matching_regex_is_valid()
     {
-        $this->assertTrue(Ando_Regex::is_matchable('@$^@'));
+        $this->assertTrue(Ando_Regex::is_valid('@$^@'));
     }
 
     public function test_pattern_quoted_string()
@@ -323,5 +323,13 @@ class Ando_RegexTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, preg_match("@$default@", $single, $matches));
         $this->assertEquals("'Not a \'double quoted string\' here'", $matches[0]);
     }
+
+	public function test_count_captures() {
+		$this->assertEquals(0, Ando_Regex::count_captures('aaa\(bbb\)ccc[(x)]ddd'));
+	}
+
+	public function test_count_groups() {
+		$this->assertEquals(0, Ando_Regex::count_groups('aaa\(bbb\)ccc[(x)]ddd'));
+	}
 
 }

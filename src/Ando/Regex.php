@@ -112,7 +112,7 @@ class Ando_Regex
      *
      * @return bool
      */
-    static public function is_matchable($regex)
+    static public function is_valid($regex)
     {
         $result = false !== @preg_match($regex, null);
         return $result;
@@ -124,7 +124,7 @@ class Ando_Regex
      *
      * @link http://www.regular-expressions.info/examplesprogrammer.html
      *
-     * TODO: integrate alternative templates like '([$delimiters])(?:(?!\1).)*\1'
+     * TODO integrate alternative templates like '([$delimiters])(?:(?!\1).)*\1'
      * Notice that the above template is a work in progress because it lacks
      * support for the escaping character.
      *
@@ -439,6 +439,28 @@ class Ando_Regex
     /**
      * Substitute a single occurrence of a variable name into the template with its value.
      *
+     * TODO fix the bug: this pattern '(a)$name(b)\1\2' is not supported now
+     *   In fact, if $name does not contain captures then the code here works fine,
+     *   but if it does contain captures, then \2 would not be changed and it would
+     *   refer to the first capture in $name instead of referring to b.
+     *
+     * TODO fix the bug: conditional groups can specify numbered backreferences without a backslash
+     *
+     * TODO fix the bug: use the more robust count_groups instead of count_captures
+     *   One problem I see in using count_groups is that it requires balanced parentheses
+     *   if the pattern to count contains hellternations. Maybe it makes sense to relax that
+     *   by not throwing an exception, and adjusting the result accordingly (if needed).
+     *
+     * TODO fix the bug: named backreferences are not supported now
+     *
+     * TODO fix the bug: self::captures_in_variables must be initialized each time an interpolation is requested
+     *
+     * TODO fix the bug: support partial interpolations (not all variables at once)
+     *
+     * TODO fix the bug: support recursive interpolations; if variables' values contain more variables
+     *
+     * TODO fix the bug: support recursive interpolations: prevent infinite recursions
+     *
      * @param $matches
      *
      * @return mixed
@@ -560,6 +582,231 @@ class Ando_Regex
 
         return $result;
     }
+
+	//---
+
+	/**
+	 * Remove escaped chars from $pattern by compressing the two characters formed by
+	 * the escaping char and the escaped char into a single '%'.
+	 * This helps to greatly simplify matching against regular expressions because
+	 * all remaining chars are either special chars or innocuous chars.
+	 *
+	 * @param string $pattern
+	 *
+	 * @return string
+	 */
+	static protected function remove_escaped_chars( $pattern ) {
+		$result = $pattern;
+
+		$find_explicitly_escaped = '/\\\\./';
+		$result = preg_replace($find_explicitly_escaped, '%', $result);
+
+		// Notice that $find_implicitly_escaped is much simpler than it should because
+		// $find_explicitly_escaped has already removed difficulties (\) from $result.
+		$find_implicitly_escaped = '/\[[^\]]*\]/';
+		$result = preg_replace($find_implicitly_escaped, '%', $result);
+
+		return $result;
+	}
+
+	/**
+	 * Count repeated names, where each name is at $named_groups[i][1][0], with 0<i<count($named_groups).
+	 *
+	 * @param array $named_groups Matches from preg_match_all with PREG_SET_ORDER | PREG_OFFSET_CAPTURE
+	 *
+	 * @return number
+	 */
+	static protected function count_repeated_names( $named_groups ) {
+		$seen = array();
+		foreach ($named_groups as $named_group)
+		{
+			$name = $named_group[1][0];
+			if (isset($seen[$name]))
+			{
+				$seen[$name] += 1;
+			}
+			else
+			{
+				$seen[$name] = 0;
+			}
+		}
+		$result = array_sum($seen);
+		return $result;
+	}
+
+	/**
+	 * Returns how many groups (numbered or named) are captured in the given $pattern,
+	 * ignoring hellternations (?|...|...)
+	 * NOTE: the given $pattern is assumed to not contain escaped chars.
+	 *
+	 * @param string $pattern
+	 * @param array  $named_groups
+	 * @param array  $numbered_groups
+	 *
+	 * @return integer
+	 */
+	static protected function count_groups_ignoring_hellternations( $pattern, &$named_groups, &$numbered_groups )
+	{
+		$find_numbered_groups  = '/\((?!\?)/';
+		$numbered_groups_count = preg_match_all($find_numbered_groups, $pattern, $numbered_groups, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+		// http://php.net/manual/en/regexp.reference.conditional.php
+		// (?(if-pattern)then-pattern|else-pattern)
+		// if-pattern matches (1) '\d+|R' or (2) '?=|?!|?<=|?<!' (positive/negative look ahead/behind)
+		//   (1) is always added to $numbered_groups_count by matching $find_numbered_groups (above)
+		//   (2) is never  added to $numbered_groups_count by matching $find_numbered_groups (above)
+		// additionally, all (if any) parentheses inside the three (if-, then-, and else-) patterns
+		// count as if they were normal patterns (so they do not deserve any special treatment).
+		$find_conditions = '/\(\?\(/';
+		$conditions_count = preg_match_all($find_conditions, $pattern, $dummy);
+		$numbered_groups_count -= $conditions_count;
+
+		$find_named_groups  = '/\(\?P?(?:(?:<([^>]+)>)|(?:\'([^\']+)\'))/';
+		$named_groups_count = preg_match_all($find_named_groups, $pattern, $named_groups, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+		// each named group is also addressable by a number
+		// and those numbers do not repeat even if the names do
+		$numbered_groups_count += $named_groups_count;
+
+		$repeated_names_count = self::count_repeated_names($named_groups);
+		// repeated names (if any) only count once
+		$named_groups_count -= $repeated_names_count;
+
+		$result = $numbered_groups_count + $named_groups_count;
+		return $result;
+	}
+
+	/**
+	 * Returns the hellternations which are siblings to each other.
+	 * NOTE: the given $pattern is assumed to not contain escaped chars.
+	 *
+	 * @throws Ando_Exception
+	 *
+	 * @param string $pattern a string of alternations wrapped into (?|...)
+	 *
+	 * @return array
+	 */
+	static protected function find_hellternations( $pattern )
+	{
+		$result = array();
+		$token = '(?|';
+		$token_len = strlen($token);
+		$offset = 0;
+		do
+		{
+			$start = strpos($pattern, $token, $offset);
+			if (FALSE === $start)
+			{
+				return $result;
+			}
+			$open = 1;
+			$start += $token_len;
+			for ($i = $start, $iTop = strlen($pattern); $i < $iTop; $i++)
+			{
+				//$current = $pattern[$i];
+				if ($pattern[$i] == '(')
+				{
+					$open += 1;
+				}
+				elseif ($pattern[$i] == ')')
+				{
+					$open -= 1;
+					if (0 == $open)
+					{
+						$result[$start] = substr($pattern, $start, $i - $start);
+						$offset = $i + 1;
+						break;
+					}
+				}
+			}
+		}
+		while ($i < $iTop);
+		if (0 != $open)
+		{
+			throw new Ando_Exception('Unbalanced parentheses.');
+		}
+		return $result;
+	}
+
+	/**
+	 * Explodes an alternation on outer pipes.
+	 * NOTE: the given $pattern is assumed to not contain escaped chars.
+	 *
+	 * @throws Ando_Exception
+	 *
+	 * @param string $pattern a string with balanced (possibly nested) parentheses and pipes
+	 *
+	 * @return array
+	 */
+	static protected function explode_alternation( $pattern )
+	{
+		$result = array();
+		$open = 0;
+		$start = 0;
+		for ($i = $start, $iTop = strlen($pattern); $i < $iTop; $i++)
+		{
+			//$current = $pattern[$i];
+			if ($pattern[$i] == '(')
+			{
+				$open += 1;
+			}
+			elseif ($pattern[$i] == ')')
+			{
+				$open -= 1;
+			}
+			elseif ($pattern[$i] == '|')
+			{
+				if (0 == $open)
+				{
+					$result[$start] = substr($pattern, $start, $i - $start);
+					$start = $i + 1;
+				}
+			}
+		}
+		$result[$start] = substr($pattern, $start);  // last piece of pattern
+		if (0 != $open)
+		{
+			throw new Ando_Exception('Unbalanced parentheses.');
+		}
+		return $result;
+	}
+
+	/**
+	 * Returns how many groups (numbered or named) there are in the given $pattern
+	 *
+	 * TODO verify that: (?:a) is not a capturing group but neither (?i) is, nor (?i:a)
+	 *
+	 * @param string $pattern
+	 * @param array  $named_groups
+	 * @param array  $numbered_groups
+	 *
+	 * @return integer
+	 */
+	static protected function count_groups( $pattern, &$named_groups, &$numbered_groups )
+	{
+		$result = self::remove_escaped_chars($pattern);
+		$result = self::count_groups_ignoring_hellternations($result, $named_groups, $numbered_groups);
+		$hellternations = self::find_hellternations($pattern);
+		if (empty($hellternations))
+		{
+			return $result;
+		}
+		foreach ($hellternations as $hellternation)
+		{
+			// undo the count of the current $hellternation already added to $result
+			$easy = self::count_groups_ignoring_hellternations($hellternation, $dummy, $dummy);
+			$result -= $easy;
+			// instead add only the maximum number of groups captured by each $piece
+			$count = array();
+			$pieces = self::explode_alternation($hellternation);
+			foreach ($pieces as $piece)
+			{
+				$count[] = self::count_groups($piece, $dummy, $dummy);
+			}
+			$max = max($count);
+			$result += $max;
+		}
+		return $result;
+	}
 
 }
 

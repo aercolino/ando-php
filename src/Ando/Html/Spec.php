@@ -492,6 +492,52 @@ class Ando_Html_Spec
             $this->semantics[$category] = $list;
         }
     }
+    
+    protected $global_attributes;
+
+    protected function global_attributes_set() {
+        $attributes = 'accesskey, class, contenteditable, contextmenu, dir, draggable, dropzone, hidden, id, itemid,
+        itemprop, itemref, itemscope, itemtype, lang, spellcheck, style, tabindex, title, translate';
+
+        $event_attributes = 'onabort, onautocomplete, onautocompleteerror, onblur, oncancel, oncanplay, oncanplaythrough,
+        onchange, onclick, onclose, oncontextmenu, oncuechange, ondblclick, ondrag, ondragend, ondragenter, ondragexit,
+        ondragleave, ondragover, ondragstart, ondrop, ondurationchange, onemptied, onended, onerror, onfocus,
+        oninput, oninvalid, onkeydown, onkeypress, onkeyup, onload, onloadeddata, onloadedmetadata, onloadstart,
+        onmousedown, onmouseenter, onmouseleave, onmousemove, onmouseout, onmouseover, onmouseup, onmousewheel,
+        onpause, onplay, onplaying, onprogress, onratechange, onreset, onresize, onscroll, onseeked, onseeking,
+        onselect, onshow, onsort, onstalled, onsubmit, onsuspend, ontimeupdate, ontoggle, onvolumechange, onwaiting';
+
+        $body_special_event_attributes = 'onblur, onerror, onfocus, onload, onresize, onscroll';
+
+        // see BNF below
+        $data_attributes = '@^data-(?<name>...)@';  // Hyphenated names become camel-cased in 'dataset'.
+        /*
+         * NameStartChar ::= "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+         * NameChar	     ::= NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
+         * Name	         ::= NameStartChar (NameChar)*
+         */
+
+        // Pages that use extension and experimental attributes are by definition non-conforming !!
+
+        // I'm not sure yet, but the name could follow the data-name format.
+        $extension_attributes = '@^x-(?<name>...)@i';
+
+        // I'm not sure yet, but these names could follow the data-name format
+        // but the spec says they contain at least one underscore !!
+        $experimental_attributes = '@(?<name>...)@';
+
+        // This attribute, if present, can only have this name and value, but it's ignored.
+        $xmlns_attribute = array('xmlns' => 'http://www.w3.org/1999/xhtml');  // this is the HTML namespace !!
+
+        $xml_space_attribute = 'xml:space';  // possible but ignored !!
+
+
+        // other classifications:
+
+        $boolean_attributes = '';
+
+        $enumerated_attributes = '';
+    }
 
     /**
      * Constructor (singleton)

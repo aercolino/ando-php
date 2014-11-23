@@ -3,19 +3,20 @@
 class Ando_Regex
 {
 	/*
-	 TODO add support for
 
-	(0) self-backreferences (those that refers the same group they are into)
+	TODO add support for self-backreferences (those that refers the same group they are into)
 		-- http://php.net/manual/en/regexp.reference.back-references.php
 		- these should simply be considered like any other, so I think all is fine
 
-	(1) numbered forward references like \1, ,, \9 (refer to groups defined later in the regex, only one digit)
+	TODO add support for numbered forward references like \1, ,, \9
+		-- http://php.net/manual/en/regexp.reference.back-references.php
+		- refer to groups defined later in the regex
+		- only one digit
+
+	TODO add support for numbered backreferences like \g1, .. \g99 and their synonyms \g{1}, .. \g{99}
 		-- http://php.net/manual/en/regexp.reference.back-references.php
 
-	(2) numbered backreferences like \g1, .. \g99 and (their synonyms) \g{1}, .. \g{99}
-		-- http://php.net/manual/en/regexp.reference.back-references.php
-
-	(3) relative numbered backreferences like \g-1, \g-2 .. and (their synonyms) \g{-1}, \g{-2} ..
+	TODO add support for relative numbered backreferences like \g-1, \g-2 .. and (their synonyms) \g{-1}, \g{-2} ..
 		-- http://php.net/manual/en/regexp.reference.back-references.php
 	    - capturing group that can be found by counting as many opening parentheses of named or numbered
 	      capturing groups as specified by the number from right to left starting at the backreference.
@@ -24,17 +25,17 @@ class Ando_Regex
 		  useful in long patterns as an alternative to keeping track of the number of subpatterns in order to reference
 		  a specific previous subpattern."
 
-	(4) recursive numbered backreferences like (?1), (?2), ...
+	TODO add support for recursive numbered backreferences like (?1), (?2), ...
 		-- inside recursion (http://php.net/manual/en/regexp.reference.recursive.php)
 
-	(5) named backreferences like (?P=name), \k<name>, \k'name', \k{name} and \g{name}
+	TODO add support for named backreferences like (?P=name), \k<name>, \k'name', \k{name} and \g{name}
 		-- http://php.net/manual/en/regexp.reference.back-references.php
 		- these should simply be ignored, so I think all is fine
 	   recursive named backreferences like (?P>name) and (?&name)
 		-- inside recursion (http://php.net/manual/en/regexp.reference.recursive.php)
 		- these should simply be ignored, so I think all is fine
 
-	(6) lexical numbered backreferences like (?1), (?2), ... outside recursion
+	TODO add support for lexical numbered backreferences like (?1), (?2), ... outside recursion
 		- note that (?1), (?2), ... outside recursion work like lexical backreferences, meaning that they represent a
 		   previous group as it was defined not as it will be matched: example
 		     @(sens|respons)e and (?1)ibility@  is a shortcut for  @(sens|respons)e and (?:sens|respons)ibility@
@@ -47,11 +48,11 @@ class Ando_Regex
 		       - "sense and sensibility"
 		       - "response and responsibility"
 
-	(7) lexical named backreferences like (?P>name) and (?&name) outside recursion
+	TODO add support for lexical named backreferences like (?P>name) and (?&name) outside recursion
 		-- for symmetry these could exist.. not sure though
 		- these should simply be ignored, so I think all is fine
 
-	(8) relative numbered backreferences like (?-1), (?-2)
+	TODO add support for relative numbered backreferences like (?-1), (?-2)
 	    - they are mentioned in the comment at http://php.net/manual/en/regexp.reference.recursive.php#111935
 	    - I tried them and they work perfectly: https://xrg.es/#1m7mxeo (link valid until 22/11/2015)
 	    - comparing with (6) I wonder if these are to be considered lexically too, but for symmetry I'd say yes...
@@ -61,9 +62,9 @@ class Ando_Regex
 	    - if instead a $variable appears in between a relative backreference and the group it refers to then all the
 	      code of this class for composing expressions still makes sense.
 
-	(9) comments like (?# ... ) -- everything inside is ignored !!
+	TODO add support for comments like (?# ... ) -- everything inside is ignored !!
 
-	(10) comments like # ... \n -- only when the PCRE_EXTENDED is set ('#' not escaped nor into [])
+	TODO add support for comments like # ... \n -- only when the PCRE_EXTENDED is set ('#' not escaped nor into [])
 
 	(*1) "If any kind of assertion contains capturing subpatterns within it, these are counted for the purposes of
 	     numbering the capturing subpatterns in the whole pattern. However, substring capturing is carried out only for
@@ -73,9 +74,35 @@ class Ando_Regex
 		- the part in the above note about "substring capturing" only means that each capture in negative assertions
 	      will always be the empty string
 
-	(11) named groups like (?P<name>pattern), (?<name>pattern), (?'name'pattern)
+	TODO add support for named groups like (?P<name>pattern), (?<name>pattern), (?'name'pattern)
 		-- http://php.net/manual/en/regexp.reference.subpatterns.php
 		- currently only the <name> type is supported
+
+	TODO make sure that (?:a) is not a capturing group but neither (?i) is, nor (?i:a).
+
+	TODO add support for conditions that are numbered backreferences (without a backslash)
+		-- http://php.net/manual/en/regexp.reference.conditional.php
+
+	TODO document the need for balanced parentheses (a requirement in ::count_matches)
+        Exceptions are currently thrown if the pattern to count contains hellternations and those parentheses are not
+        balanced.
+
+	TODO see if ::find_duplicate_numbers and ::explode_alternation can work with recursive patterns
+	    for matching properly balanced expressions.
+
+	TODO add full support for templates like this '(a)$name(b)\1\2'
+        If $name does not contain captures then the current code works fine, but if it does contain captures, then \2
+		would not be changed and it would refer to the first capture in $name instead of referring to b.
+
+	TODO check if partial interpolations (not all variables at once) are supported already
+
+    TODO add support for recursive partial interpolations
+		- when variables refer more variables and you want to interpolate only a bunch of them
+        - prevent infinite recursion caused by variables referring themselves directly or hopping through other
+		  variables
+
+	TODO add support for additional predefined templates like '([$delimiters])(?:(?!\1).)*\1' (string)
+        - Notice that the above template is a work in progress because it doesn't support the escaping character.
 
 	*/
 
@@ -201,10 +228,6 @@ class Ando_Regex
      *
      * @link http://www.regular-expressions.info/examplesprogrammer.html
      *
-     * TODO integrate alternative templates like '([$delimiters])(?:(?!\1).)*\1'
-     * Notice that the above template is a work in progress because it lacks
-     * support for the escaping character.
-     *
      * @param string $begin  Begin character.
      * @param string $end    End character.
      * @param string $escape Escaping character.
@@ -264,7 +287,7 @@ class Ando_Regex
      *
      * @var int
      */
-    private $captures_in_variables = 0;
+    private $captures_in_variables;
 
     /**
      * Constructor.
@@ -439,6 +462,7 @@ class Ando_Regex
             );
         }
         $this->variables = $variables;
+	    $this->captures_in_variables = 0;
         $this->expression = self::replace('@(?<!\\\\)\$(\w+)@', array($this, 'substitute_variable'), $this->template);
         return $this;
     }
@@ -513,28 +537,6 @@ class Ando_Regex
 
     /**
      * Substitute a single occurrence of a variable name into the template with its value.
-     *
-     * TODO fix the bug: this pattern '(a)$name(b)\1\2' is not supported now
-     *   In fact, if $name does not contain captures then the code here works fine,
-     *   but if it does contain captures, then \2 would not be changed and it would
-     *   refer to the first capture in $name instead of referring to b.
-     *
-     * TODO fix the bug: conditional groups can specify numbered backreferences without a backslash
-     *
-     * TODO fix the bug: use the more robust count_groups instead of count_captures
-     *   One problem I see in using count_groups is that it requires balanced parentheses
-     *   if the pattern to count contains hellternations. Maybe it makes sense to relax that
-     *   by not throwing an exception, and adjusting the result accordingly (if needed).
-     *
-     * TODO fix the bug: named backreferences are not supported now
-     *
-     * TODO fix the bug: self::captures_in_variables must be initialized each time an interpolation is requested
-     *
-     * TODO fix the bug: support partial interpolations (not all variables at once)
-     *
-     * TODO fix the bug: support recursive interpolations; if variables' values contain more variables
-     *
-     * TODO fix the bug: support recursive interpolations: prevent infinite recursions
      *
      * @param $matches
      *
@@ -838,13 +840,6 @@ class Ando_Regex
 	 * Returns how many groups (numbered or named) there are in the given $pattern
 	 *
 	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
-	 *
-	 * TODO verify that: (?:a) is not a capturing group but neither (?i) is, nor (?i:a)
-	 *
-	 * TODO fix: this count_captures returns the same number as count($matches) when preg_match_all is used
-	 *   BUT for numbered backreferences we must ignore named groups because each of them (if they are not repeated)
-	 *   adds both a numerical and a string key to $matches, but we only want to consider the numerical key !!
-	 *   THAT is why this count_captures doesn't work OK for fixing numbered backreferences...
 	 *
 	 * @param string $pattern
 	 *

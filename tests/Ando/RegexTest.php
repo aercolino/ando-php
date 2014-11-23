@@ -325,9 +325,13 @@ class Ando_RegexTest extends PHPUnit_Framework_TestCase
     }
 
 	public function test_count_captures() {
-		$this->assertEquals( 0, Ando_Regex::count_captures( 'aaa\(bbb\)ccc[(x)]ddd' ) );
+		$count = Ando_Regex::count_matches( 'aaa\(bbb\)ccc[(x)]ddd' );
+		$this->assertEquals( 0, $count['numbered'] );
+		$this->assertEquals( 0, $count['named'] );
 
-		$this->assertEquals( 8, Ando_Regex::count_captures( '(?<before>(?:.*?<br>)*.*?)(?:(?<nest>(?<start><(?<tag>\w+).*?>)(?<nested>.*?)(?<end></\4>))|(?<empty>(<!--.*?-->|<!DOCTYPE\b.*?>|<\w+.*?>)))' ) );
+		$count = Ando_Regex::count_matches( '(?<before>(?:.*?<br>)*.*?)(?:(?<nest>(?<start><(?<tag>\w+).*?>)(?<nested>.*?)(?<end></\4>))|(?<empty>(<!--.*?-->|<!DOCTYPE\b.*?>|<\w+.*?>)))' );
+		$this->assertEquals( 8, $count['numbered'] );
+		$this->assertEquals( 7, $count['named'] );
 	}
 
 }

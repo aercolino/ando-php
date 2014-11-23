@@ -2,8 +2,85 @@
 
 class Ando_Regex
 {
+	/*
+	 TODO add support for
 
-    /**
+	(0) self-backreferences (those that refers the same group they are into)
+		-- http://php.net/manual/en/regexp.reference.back-references.php
+		- these should simply be considered like any other, so I think all is fine
+
+	(1) numbered forward references like \1, ,, \9 (refer to groups defined later in the regex, only one digit)
+		-- http://php.net/manual/en/regexp.reference.back-references.php
+
+	(2) numbered backreferences like \g1, .. \g99 and (their synonyms) \g{1}, .. \g{99}
+		-- http://php.net/manual/en/regexp.reference.back-references.php
+
+	(3) relative numbered backreferences like \g-1, \g-2 .. and (their synonyms) \g{-1}, \g{-2} ..
+		-- http://php.net/manual/en/regexp.reference.back-references.php
+	    - capturing group that can be found by counting as many opening parentheses of named or numbered
+	      capturing groups as specified by the number from right to left starting at the backreference.
+		- "The use of the \g sequence with a negative number signifies a relative reference. For example,
+		  (foo)(bar)\g{-1} would match the sequence "foobarbar" and (foo)(bar)\g{-2} matches "foobarfoo". This can be
+		  useful in long patterns as an alternative to keeping track of the number of subpatterns in order to reference
+		  a specific previous subpattern."
+
+	(4) recursive numbered backreferences like (?1), (?2), ...
+		-- inside recursion (http://php.net/manual/en/regexp.reference.recursive.php)
+
+	(5) named backreferences like (?P=name), \k<name>, \k'name', \k{name} and \g{name}
+		-- http://php.net/manual/en/regexp.reference.back-references.php
+		- these should simply be ignored, so I think all is fine
+	   recursive named backreferences like (?P>name) and (?&name)
+		-- inside recursion (http://php.net/manual/en/regexp.reference.recursive.php)
+		- these should simply be ignored, so I think all is fine
+
+	(6) lexical numbered backreferences like (?1), (?2), ... outside recursion
+		- note that (?1), (?2), ... outside recursion work like lexical backreferences, meaning that they represent a
+		   previous group as it was defined not as it will be matched: example
+		     @(sens|respons)e and (?1)ibility@  is a shortcut for  @(sens|respons)e and (?:sens|respons)ibility@
+		     thus both expressions match any of
+		       - "sense and sensibility",
+		       - "response and responsibility",
+		       - "sense and responsibility",
+		       - "response and sensibility",
+		     while @(sens|respons)e and \1ibility@ only matches
+		       - "sense and sensibility"
+		       - "response and responsibility"
+
+	(7) lexical named backreferences like (?P>name) and (?&name) outside recursion
+		-- for symmetry these could exist.. not sure though
+		- these should simply be ignored, so I think all is fine
+
+	(8) relative numbered backreferences like (?-1), (?-2)
+	    - they are mentioned in the comment at http://php.net/manual/en/regexp.reference.recursive.php#111935
+	    - I tried them and they work perfectly: https://xrg.es/#1m7mxeo (link valid until 22/11/2015)
+	    - comparing with (6) I wonder if these are to be considered lexically too, but for symmetry I'd say yes...
+	    - under the assumption that no $variable appears in between a relative backreference and the group it refers to,
+	      these (new to me) kind of backreferences could be used to solve the numbered backreferences problem when one
+	      wants to reuse expressions inside other expressions, exactly like the comment above suggests.
+	    - if instead a $variable appears in between a relative backreference and the group it refers to then all the
+	      code of this class for composing expressions still makes sense.
+
+	(9) comments like (?# ... ) -- everything inside is ignored !!
+
+	(10) comments like # ... \n -- only when the PCRE_EXTENDED is set ('#' not escaped nor into [])
+
+	(*1) "If any kind of assertion contains capturing subpatterns within it, these are counted for the purposes of
+	     numbering the capturing subpatterns in the whole pattern. However, substring capturing is carried out only for
+	     positive assertions, because it does not make sense for negative assertions."
+		-- http://php.net/manual/en/regexp.reference.assertions.php
+		- I've tried it at https://xrg.es/#gdoqzf
+		- the part in the above note about "substring capturing" only means that each capture in negative assertions
+	      will always be the empty string
+
+	(11) named groups like (?P<name>pattern), (?<name>pattern), (?'name'pattern)
+		-- http://php.net/manual/en/regexp.reference.subpatterns.php
+		- currently only the <name> type is supported
+
+	*/
+
+
+	/**
      * Compose regular expressions taking care of backreferences.
      */
 
@@ -355,16 +432,14 @@ class Ando_Regex
             return $this;
         }
         foreach ($variables as $name => $value) {
-            $variables[$name] = array(
-                'value' => $value,
-                'captures' => self::count_captures($value)
+            $count = self::count_matches($value);
+	        $variables[$name] = array(
+                'value'    => $value,
+                'captures' => $count['numbered'],
             );
         }
         $this->variables = $variables;
-        $this->expression = self::replace('@(?<!\\\\)\$(\w+)@', array(
-            $this,
-            'substitute_variable'
-        ), $this->template);
+        $this->expression = self::replace('@(?<!\\\\)\$(\w+)@', array($this, 'substitute_variable'), $this->template);
         return $this;
     }
 
@@ -470,11 +545,9 @@ class Ando_Regex
         list($name, $offset) = $matches[1];
         $value = $this->variables[$name]['value'];
         $before = substr($this->template, 0, $offset - 1); // 1 less because of the $ prefix
-        $this->captures = self::count_captures($before) + $this->captures_in_variables;
-        $result = preg_replace_callback('@\\\\(\d{1,2})@', array(
-            $this,
-            'fix_backreference'
-        ), $value);
+	    $before_count = self::count_matches($before);
+	    $this->captures = $before_count['numbered'] + $this->captures_in_variables;
+        $result = preg_replace_callback('@\\\\(\d{1,2})@', array($this, 'fix_backreference'), $value);
         $this->captures_in_variables += $this->variables[$name]['captures'];
         return $result;
     }
@@ -629,12 +702,10 @@ class Ando_Regex
 	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
 	 *
 	 * @param string $pattern
-	 * @param array  $named_groups
-	 * @param array  $numbered_groups
 	 *
-	 * @return integer
+	 * @return array
 	 */
-	static protected function count_groups_ignoring_hellternations( $pattern, &$named_groups, &$numbered_groups )
+	static protected function count_groups_ignoring_duplicate_numbers( $pattern )
 	{
 		$find_numbered_groups  = '/\((?!\?)/';
 		$numbered_groups_count = preg_match_all($find_numbered_groups, $pattern, $numbered_groups, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
@@ -660,7 +731,7 @@ class Ando_Regex
 		// Repeated names (if any) only count once, thus subtract all found repetitions.
 		$named_groups_count -= $repeated_names_count;
 
-		$result = $numbered_groups_count + $named_groups_count;
+		$result = array( 'numbered' => $numbered_groups_count, 'named' => $named_groups_count);
 		return $result;
 	}
 
@@ -676,7 +747,7 @@ class Ando_Regex
 	 *
 	 * @return array
 	 */
-	static protected function find_hellternations( $pattern )
+	static protected function find_duplicate_numbers( $pattern )
 	{
 		$result = array();
 		$token = '(?|';
@@ -776,34 +847,37 @@ class Ando_Regex
 	 *   THAT is why this count_captures doesn't work OK for fixing numbered backreferences...
 	 *
 	 * @param string $pattern
-	 * @param array  $named_groups
-	 * @param array  $numbered_groups
 	 *
-	 * @return integer
+	 * @return array
 	 */
-	static public function count_captures( $pattern, &$named_groups = array(), &$numbered_groups = array() )
+	static public function count_matches( $pattern )
 	{
-		$result = self::remove_escaped_chars($pattern);
-		$result = self::count_groups_ignoring_hellternations($result, $named_groups, $numbered_groups);
-		$hellternations = self::find_hellternations($pattern);
+		$simplified_pattern = self::remove_escaped_chars($pattern);
+		$result = self::count_groups_ignoring_duplicate_numbers($simplified_pattern);
+
+		$hellternations = self::find_duplicate_numbers($pattern);
 		if (empty($hellternations))
 		{
 			return $result;
 		}
+
 		foreach ($hellternations as $hellternation)
 		{
-			// undo the count of the current $hellternation already added to $result
-			$easy = self::count_groups_ignoring_hellternations($hellternation, $dummy, $dummy);
-			$result -= $easy;
-			// instead add only the maximum number of groups captured by each $piece
-			$count = array();
+			// undo the count of the current $hellternation already added to $result ($result -= $easy)
+			$easy = self::count_groups_ignoring_duplicate_numbers($hellternation);
+			$result['numbered'] -= $easy['numbered'];
+
+			// then add only the maximum number of groups captured across all the alternatives ($result += $max)
+			$max = 0;
 			$pieces = self::explode_alternation($hellternation);
 			foreach ($pieces as $piece)
 			{
-				$count[] = self::count_groups($piece, $dummy, $dummy);
+				$count = self::count_matches($piece);
+				if ($max < $count['numbered']) {
+					$max = $count['numbered'];
+				}
 			}
-			$max = max($count);
-			$result += $max;
+			$result['numbered'] += $max;
 		}
 		return $result;
 	}

@@ -374,7 +374,7 @@ class Ando_Regex
     }
 
     /**
-     * Interpolate the variables into the template, taking care of the backreferences.
+     * Interpolate variables into the template, taking care of backreferences.
      *
      * @param array $variables
      *

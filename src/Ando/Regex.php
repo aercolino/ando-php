@@ -2,18 +2,18 @@
 
 class Ando_Regex
 {
-	/*
-	NOTES:
-	(1) "If any kind of assertion contains capturing subpatterns within it, these are counted for the purposes of
-	     numbering the capturing subpatterns in the whole pattern. However, substring capturing is carried out only for
-	     positive assertions, because it does not make sense for negative assertions."
-		-- http://php.net/manual/en/regexp.reference.assertions.php
-		- I've tried it at https://xrg.es/#gdoqzf
-		- the part in the above note about "substring capturing" only means that each capture in negative assertions
-	      will always be the empty string
-	*/
+    /*
+    NOTES:
+    (1) "If any kind of assertion contains capturing subpatterns within it, these are counted for the purposes of
+         numbering the capturing subpatterns in the whole pattern. However, substring capturing is carried out only for
+         positive assertions, because it does not make sense for negative assertions."
+        -- http://php.net/manual/en/regexp.reference.assertions.php
+        - I've tried it at https://xrg.es/#gdoqzf
+        - the part in the above note about "substring capturing" only means that each capture in negative assertions
+          will always be the empty string
+    */
 
-	/**
+    /**
      * Compose regular expressions taking care of backreferences.
      */
 
@@ -22,7 +22,8 @@ class Ando_Regex
      *
      * @return string
      */
-    static public function flavor()
+    static public
+    function flavor()
     {
         return 'PCRE';
     }
@@ -52,11 +53,14 @@ class Ando_Regex
      *
      * @return string
      */
-    static public function global_safe_modifiers()
+    static public
+    function global_safe_modifiers()
     {
         $result = '' . // i m s x A D S U X u
-            self::PCRE_CASELESS_MODIFIER . self::PCRE_MULTILINE_MODIFIER . self::PCRE_DOTALL_MODIFIER . self::PCRE_EXTENDED_MODIFIER . self::PCRE_ANCHORED_MODIFIER . self::PCRE_DOLLAR_ENDONLY_MODIFIER . self::PCRE_STUDY_EXTRA_NEEDED_MODIFIER .
-            self::PCRE_UNGREEDY_MODIFIER . self::PCRE_EXTRA_MODIFIER . self::PCRE_UTF8_MODIFIER;
+                  self::PCRE_CASELESS_MODIFIER . self::PCRE_MULTILINE_MODIFIER . self::PCRE_DOTALL_MODIFIER .
+                  self::PCRE_EXTENDED_MODIFIER . self::PCRE_ANCHORED_MODIFIER . self::PCRE_DOLLAR_ENDONLY_MODIFIER .
+                  self::PCRE_STUDY_EXTRA_NEEDED_MODIFIER . self::PCRE_UNGREEDY_MODIFIER . self::PCRE_EXTRA_MODIFIER .
+                  self::PCRE_UTF8_MODIFIER;
         return $result;
     }
 
@@ -67,10 +71,13 @@ class Ando_Regex
      *
      * @return string
      */
-    static public function local_safe_modifiers()
+    static public
+    function local_safe_modifiers()
     {
         $result = '' . // i m s x U X J
-            self::PCRE_CASELESS_MODIFIER . self::PCRE_MULTILINE_MODIFIER . self::PCRE_DOTALL_MODIFIER . self::PCRE_EXTENDED_MODIFIER . self::PCRE_UNGREEDY_MODIFIER . self::PCRE_EXTRA_MODIFIER . self::PCRE_INFO_JCHANGED_MODIFIER;
+                  self::PCRE_CASELESS_MODIFIER . self::PCRE_MULTILINE_MODIFIER . self::PCRE_DOTALL_MODIFIER .
+                  self::PCRE_EXTENDED_MODIFIER . self::PCRE_UNGREEDY_MODIFIER . self::PCRE_EXTRA_MODIFIER .
+                  self::PCRE_INFO_JCHANGED_MODIFIER;
         return $result;
     }
 
@@ -82,9 +89,12 @@ class Ando_Regex
      *
      * @return string
      */
-    static public function pattern_global_modifiers($include_eval = false)
+    static public
+    function pattern_global_modifiers( $include_eval = false )
     {
-        $modifiers = self::global_safe_modifiers() . ($include_eval ? self::PREG_REPLACE_EVAL_MODIFIER : '');
+        $modifiers = self::global_safe_modifiers() . ($include_eval
+                        ? self::PREG_REPLACE_EVAL_MODIFIER
+                        : '');
         $result = '[ \n' . $modifiers . ']*';
         return $result;
     }
@@ -97,7 +107,8 @@ class Ando_Regex
      *
      * @return string
      */
-    static public function pattern_same_delimiter()
+    static public
+    function pattern_same_delimiter()
     {
         $result = '[^a-zA-Z0-9\\\\\s\(\[\{\<]';
         return $result;
@@ -109,7 +120,8 @@ class Ando_Regex
      *
      * @return string
      */
-    static public function option_same_name_groups_ok()
+    static public
+    function option_same_name_groups_ok()
     {
         $result = '(?' . self::PCRE_INFO_JCHANGED_MODIFIER . ')';
         return $result;
@@ -122,7 +134,8 @@ class Ando_Regex
      *
      * @return bool
      */
-    static public function is_valid($regex)
+    static public
+    function is_valid( $regex )
     {
         $result = false !== @preg_match($regex, null);
         return $result;
@@ -140,15 +153,16 @@ class Ando_Regex
      *
      * @return string
      */
-    static public function pattern_quoted_string($begin = "'", $end = "'", $escape = "\\\\")
+    static public
+    function pattern_quoted_string( $begin = "'", $end = "'", $escape = "\\\\" )
     {
         $template = '$begin[^$end$escape]*(?:$escape.[^$end$escape]*)*$end';
         $regex = new self($template);
         $regex->interpolate(array(
-            'begin' => $begin,
-            'end' => $end,
-            'escape' => $escape
-        ));
+                                    'begin'  => $begin,
+                                    'end'    => $end,
+                                    'escape' => $escape
+                            ));
         $result = $regex->expression();
         return $result;
     }
@@ -203,16 +217,17 @@ class Ando_Regex
      *                                   Use false to use the wrapper in the template, if any;
      *                                   Use a string (even empty) to use such a wrapper.
      */
-    public function __construct($template, $wrapper = null)
+    public
+    function __construct( $template, $wrapper = null )
     {
         $this->template_set($template);
         $this->wrapper_set($wrapper);
 
-        if (is_null($this->wrapper)) {
+        if ( is_null($this->wrapper) ) {
             $this->expression = $this->template; // we won't unwrap it now, nor we will wrap it until we set a wrapper
-        } elseif (false === $this->wrapper) {
+        } elseif ( false === $this->wrapper ) {
             $this->expression = self::unwrap($this->template, $this->wrapper);
-        } elseif (strlen($this->wrapper) >= 0) {
+        } elseif ( strlen($this->wrapper) >= 0 ) {
             $this->expression = self::unwrap($this->template);
         }
     }
@@ -226,9 +241,10 @@ class Ando_Regex
      *
      * @return $this
      */
-    public function template_set($template)
+    public
+    function template_set( $template )
     {
-        if (!self::is_valid_template($template)) {
+        if ( ! self::is_valid_template($template) ) {
             throw new Ando_Exception('Invalid template.');
         }
         $this->template = $template;
@@ -240,7 +256,8 @@ class Ando_Regex
      *
      * @return string
      */
-    public function template()
+    public
+    function template()
     {
         return $this->template;
     }
@@ -254,9 +271,10 @@ class Ando_Regex
      *
      * @return $this
      */
-    public function wrapper_set($wrapper)
+    public
+    function wrapper_set( $wrapper )
     {
-        if (!self::is_valid_wrapper($wrapper)) {
+        if ( ! self::is_valid_wrapper($wrapper) ) {
             throw new Ando_Exception('Invalid wrapper.');
         }
         $this->wrapper = $wrapper;
@@ -268,7 +286,8 @@ class Ando_Regex
      *
      * @return null|string
      */
-    public function wrapper()
+    public
+    function wrapper()
     {
         return $this->wrapper;
     }
@@ -280,10 +299,11 @@ class Ando_Regex
      *
      * @return string
      */
-    public function expression($wrapped = false)
+    public
+    function expression( $wrapped = false )
     {
         $result = $this->expression;
-        if ($wrapped && !empty($this->wrapper)) {
+        if ( $wrapped && ! empty($this->wrapper) ) {
             $result = self::wrap($result, $this->wrapper);
         }
         return $result;
@@ -294,7 +314,8 @@ class Ando_Regex
      *
      * @return string
      */
-    public function __toString()
+    public
+    function __toString()
     {
         $result = $this->expression(true);
         return $result;
@@ -309,7 +330,8 @@ class Ando_Regex
      *
      * @return Ando_Regex
      */
-    static public function def($template, $wrapper = '@@')
+    static public
+    function def( $template, $wrapper = '@@' )
     {
         $result = new self($template, $wrapper);
         return $result;
@@ -322,9 +344,10 @@ class Ando_Regex
      *
      * @return bool
      */
-    static protected function is_valid_template($template)
+    static protected
+    function is_valid_template( $template )
     {
-        if (empty($template)) {
+        if ( empty($template) ) {
             return false;
         }
         return true;
@@ -337,12 +360,14 @@ class Ando_Regex
      *
      * @return bool
      */
-    static protected function is_valid_wrapper($wrapper)
+    static protected
+    function is_valid_wrapper( $wrapper )
     {
-        if (empty($wrapper)) {
+        if ( empty($wrapper) ) {
             return true;
         }
-        if (preg_match('@(?:\(\)|\[\]|\{\}|\<\>|(' . self::pattern_same_delimiter() . ')\1)' . self::pattern_global_modifiers() . '@', $wrapper)) {
+        if ( preg_match('@(?:\(\)|\[\]|\{\}|\<\>|(' . self::pattern_same_delimiter() . ')\1)' .
+                        self::pattern_global_modifiers() . '@', $wrapper) ) {
             return true;
         }
         return false;
@@ -355,20 +380,21 @@ class Ando_Regex
      *
      * @return Ando_Regex
      */
-    public function interpolate($variables = array())
+    public
+    function interpolate( $variables = array() )
     {
-        if (0 === count($variables)) {
+        if ( 0 === count($variables) ) {
             return $this;
         }
         foreach ($variables as $name => $value) {
             $count = self::count_matches($value);
-	        $variables[$name] = array(
-                'value'    => $value,
-                'captures' => $count['numbered'],
+            $variables[$name] = array(
+                    'value'    => $value,
+                    'captures' => $count['numbered'],
             );
         }
         $this->variables = $variables;
-	    $this->captures_in_variables = 0;
+        $this->captures_in_variables = 0;
         $this->expression = self::replace('@(?<!\\\\)\$(\w+)@', array($this, 'substitute_variable'), $this->template);
         return $this;
     }
@@ -381,12 +407,14 @@ class Ando_Regex
      *
      * @return string
      */
-    static public function unwrap($expression, &$wrapper = null)
+    static public
+    function unwrap( $expression, &$wrapper = null )
     {
         $result = $expression;
         $wrapper = '';
 
-        $same_delimited = '(?<delimiter_1>' . self::pattern_same_delimiter() . ')(?<expression>(?:(?!\1).)*)(?<delimiter_2>\1)'; // must be the FIRST capture!!
+        $same_delimited = '(?<delimiter_1>' . self::pattern_same_delimiter() .
+                          ')(?<expression>(?:(?!\1).)*)(?<delimiter_2>\1)'; // must be the FIRST capture!!
         $pair_delimited['()'] = '(?<delimiter_1>\()(?<expression>(?:(?!\)).)*)(?<delimiter_2>\))';
         $pair_delimited['[]'] = '(?<delimiter_1>\[)(?<expression>(?:(?!\]).)*)(?<delimiter_2>\])';
         $pair_delimited['{}'] = '(?<delimiter_1>\{)(?<expression>(?:(?!\}).)*)(?<delimiter_2>\})';
@@ -394,9 +422,10 @@ class Ando_Regex
         $delimited = $same_delimited . '|' . implode('|', $pair_delimited);
 
         $no_esc = preg_replace('@\\.@', '', $result); // remove escaped characters to simplify matches
-        if (preg_match('@' . self::option_same_name_groups_ok() . '^(?:' . $delimited . ')' . '(?<modifiers>' . self::pattern_global_modifiers() . ')$@', $no_esc, $matches)) {
+        if ( preg_match('@' . self::option_same_name_groups_ok() . '^(?:' . $delimited . ')' . '(?<modifiers>' .
+                        self::pattern_global_modifiers() . ')$@', $no_esc, $matches) ) {
             // due to matching against $no_esc, we can't just take $matches['expression'];
-            $result = substr($expression, 1, -1 - strlen($matches['modifiers']));
+            $result = substr($expression, 1, - 1 - strlen($matches['modifiers']));
             $wrapper = $matches['delimiter_1'] . $matches['delimiter_2'] . $matches['modifiers'];
         }
 
@@ -413,9 +442,10 @@ class Ando_Regex
      *
      * @return string
      */
-    static public function wrap($expression, $wrapper)
+    static public
+    function wrap( $expression, $wrapper )
     {
-        if (!self::is_valid_wrapper($wrapper)) {
+        if ( ! self::is_valid_wrapper($wrapper) ) {
             throw new Ando_Exception('Invalid wrapper.');
         }
 
@@ -448,13 +478,14 @@ class Ando_Regex
      *
      * @return mixed
      */
-    protected function substitute_variable($matches)
+    protected
+    function substitute_variable( $matches )
     {
         list($name, $offset) = $matches[1];
         $value = $this->variables[$name]['value'];
         $before = substr($this->template, 0, $offset - 1); // 1 less because of the $ prefix
-	    $before_count = self::count_matches($before);
-	    $this->captures = $before_count['numbered'] + $this->captures_in_variables;
+        $before_count = self::count_matches($before);
+        $this->captures = $before_count['numbered'] + $this->captures_in_variables;
         $result = preg_replace_callback('@\\\\(\d{1,2})@', array($this, 'fix_backreference'), $value);
         $this->captures_in_variables += $this->variables[$name]['captures'];
         return $result;
@@ -469,7 +500,8 @@ class Ando_Regex
      *
      * @return string
      */
-    protected function fix_backreference($matches)
+    protected
+    function fix_backreference( $matches )
     {
         $old_backreference = $matches[1];
         $backreference = $this->captures + $old_backreference;
@@ -491,18 +523,19 @@ class Ando_Regex
      *
      * @return null|string|array
      */
-    static public function replace($pattern, $callback, $subject, $limit = -1, &$count = 0)
+    static public
+    function replace( $pattern, $callback, $subject, $limit = - 1, &$count = 0 )
     {
 
-        $limit = min(array(-1, $limit));
+        $limit = min(array(- 1, $limit));
         $count = min(array(0, $count));
         $result = $subject;
 
-        if (0 <= $limit && $limit <= $count) {
+        if ( 0 <= $limit && $limit <= $count ) {
             return $result;
         }
 
-        if (is_array($subject)) {
+        if ( is_array($subject) ) {
             foreach ($subject as &$subSubject) {
                 $subSubject = self::replace($pattern, $callback, $subSubject, $limit, $subCount);
                 $count += $subCount;
@@ -510,7 +543,7 @@ class Ando_Regex
             return $subject;
         }
 
-        if (is_array($pattern)) {
+        if ( is_array($pattern) ) {
             foreach ($pattern as $subPattern) {
                 $subject = self::replace($subPattern, $callback, $subject, $limit, $subCount);
                 $count += $subCount;
@@ -521,7 +554,7 @@ class Ando_Regex
         $subject_search_start = 0;
         $result_replace_start = 0;
         $found = preg_match($pattern, $subject, $matches, PREG_OFFSET_CAPTURE, $subject_search_start);
-        if (false === $found) {
+        if ( false === $found ) {
             // there was an error (it should mean the $pattern was not a valid expression)
             // in this case preg_replace_callback returns NULL
             return null;
@@ -536,7 +569,7 @@ class Ando_Regex
             $result = substr_replace($result, $replacement, $result_replace_start, $match_length);
 
             $count += 1;
-            if (0 <= $limit && $limit <= $count) {
+            if ( 0 <= $limit && $limit <= $count ) {
                 return $result;
             }
 
@@ -547,241 +580,227 @@ class Ando_Regex
         return $result;
     }
 
-	//---
+    //---
 
-	/**
-	 * Remove escaped chars from $pattern by compressing the two characters formed by
-	 * the escaping char and the escaped char into a single '%'.
-	 * This helps to greatly simplify matching against regular expressions because
-	 * all remaining chars are either special chars or innocuous chars.
-	 *
-	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
-	 *
-	 * @param string $pattern
-	 *
-	 * @return string
-	 */
-	static protected function remove_escaped_chars( $pattern ) {
-		$result = $pattern;
+    /**
+     * Remove escaped chars from $pattern by compressing the two characters formed by
+     * the escaping char and the escaped char into a single '%'.
+     * This helps to greatly simplify matching against regular expressions because
+     * all remaining chars are either special chars or innocuous chars.
+     *
+     * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+     *
+     * @param string $pattern
+     *
+     * @return string
+     */
+    static protected
+    function remove_escaped_chars( $pattern )
+    {
+        $result = $pattern;
 
-		$find_explicitly_escaped = '/\\\\./';
-		$result = preg_replace($find_explicitly_escaped, '%', $result);
+        $find_explicitly_escaped = '/\\\\./';
+        $result = preg_replace($find_explicitly_escaped, '%', $result);
 
-		// Notice that $find_implicitly_escaped is much simpler than it should because
-		// $find_explicitly_escaped has already removed difficulties (\) from $result.
-		$find_implicitly_escaped = '/\[[^\]]*\]/';
-		$result = preg_replace($find_implicitly_escaped, '%', $result);
+        // Notice that $find_implicitly_escaped is much simpler than it should because
+        // $find_explicitly_escaped has already removed difficulties (\) from $result.
+        $find_implicitly_escaped = '/\[[^\]]*\]/';
+        $result = preg_replace($find_implicitly_escaped, '%', $result);
 
-		return $result;
-	}
+        return $result;
+    }
 
-	/**
-	 * Count repeated names, where each name is at $named_groups[i][1][0], with 0 <= i < count($named_groups).
-	 *
-	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
-	 *
-	 * @param array $named_groups Matches from preg_match_all with PREG_SET_ORDER | PREG_OFFSET_CAPTURE.
-	 *
-	 * @return number
-	 */
-	static protected function count_repeated_names( $named_groups ) {
-		$seen = array();
-		foreach ($named_groups as $named_group)
-		{
-			$name = $named_group[1][0];
-			if (isset($seen[$name]))
-			{
-				$seen[$name] += 1;
-			}
-			else
-			{
-				$seen[$name] = 0;
-			}
-		}
-		$result = array_sum($seen);
-		return $result;
-	}
+    /**
+     * Count repeated names, where each name is at $named_groups[i][1][0], with 0 <= i < count($named_groups).
+     *
+     * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+     *
+     * @param array $named_groups Matches from preg_match_all with PREG_SET_ORDER | PREG_OFFSET_CAPTURE.
+     *
+     * @return number
+     */
+    static protected
+    function count_repeated_names( $named_groups )
+    {
+        $seen = array();
+        foreach ($named_groups as $named_group) {
+            $name = $named_group[1][0];
+            if ( isset($seen[$name]) ) {
+                $seen[$name] += 1;
+            } else {
+                $seen[$name] = 0;
+            }
+        }
+        $result = array_sum($seen);
+        return $result;
+    }
 
-	/**
-	 * Returns how many groups (numbered or named) are captured in the given $pattern,
-	 * ignoring hellternations (?|...|...)
-	 * NOTE: the given $pattern is assumed to not contain escaped chars.
-	 *
-	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
-	 *
-	 * @param string $pattern
-	 *
-	 * @return array
-	 */
-	static protected function count_groups_ignoring_duplicate_numbers( $pattern )
-	{
-		$find_numbered_groups  = '/\((?!\?)/';
-		$numbered_groups_count = preg_match_all($find_numbered_groups, $pattern, $numbered_groups, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+    /**
+     * Returns how many groups (numbered or named) are captured in the given $pattern,
+     * ignoring hellternations (?|...|...)
+     * NOTE: the given $pattern is assumed to not contain escaped chars.
+     *
+     * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+     *
+     * @param string $pattern
+     *
+     * @return array
+     */
+    static protected
+    function count_groups_ignoring_duplicate_numbers( $pattern )
+    {
+        $find_numbered_groups = '/\((?!\?)/';
+        $numbered_groups_count = preg_match_all($find_numbered_groups, $pattern, $numbered_groups,
+                                                PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 
-		// http://php.net/manual/en/regexp.reference.conditional.php
-		// (?(if-pattern)then-pattern|else-pattern)
-		// if-pattern matches (1) '\d+|R' or (2) '?=|?!|?<=|?<!' (positive/negative look ahead/behind)
-		//   (1) is always added to $numbered_groups_count by matching $find_numbered_groups (above)
-		//   (2) is never  added to $numbered_groups_count by matching $find_numbered_groups (above)
-		// additionally, all (if any) parentheses inside the three (if-, then-, and else-) patterns
-		// count as if they were normal patterns (so they do not deserve any special treatment).
-		$find_conditions = '/\(\?\(/';
-		$conditions_count = preg_match_all($find_conditions, $pattern, $dummy);
-		$numbered_groups_count -= $conditions_count;
+        // http://php.net/manual/en/regexp.reference.conditional.php
+        // (?(if-pattern)then-pattern|else-pattern)
+        // if-pattern matches (1) '\d+|R' or (2) '?=|?!|?<=|?<!' (positive/negative look ahead/behind)
+        //   (1) is always added to $numbered_groups_count by matching $find_numbered_groups (above)
+        //   (2) is never  added to $numbered_groups_count by matching $find_numbered_groups (above)
+        // additionally, all (if any) parentheses inside the three (if-, then-, and else-) patterns
+        // count as if they were normal patterns (so they do not deserve any special treatment).
+        $find_conditions = '/\(\?\(/';
+        $conditions_count = preg_match_all($find_conditions, $pattern, $dummy);
+        $numbered_groups_count -= $conditions_count;
 
-		$find_named_groups  = '/\(\?P?(?:(?:<([^>]+)>)|(?:\'([^\']+)\'))/';
-		$named_groups_count = preg_match_all($find_named_groups, $pattern, $named_groups, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
-		// each named group is also addressable by a number
-		// and those numbers do not repeat even if the names do
-		$numbered_groups_count += $named_groups_count;
+        $find_named_groups = '/\(\?P?(?:(?:<([^>]+)>)|(?:\'([^\']+)\'))/';
+        $named_groups_count = preg_match_all($find_named_groups, $pattern, $named_groups,
+                                             PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+        // each named group is also addressable by a number
+        // and those numbers do not repeat even if the names do
+        $numbered_groups_count += $named_groups_count;
 
-		$repeated_names_count = self::count_repeated_names($named_groups);
-		// Repeated names (if any) only count once, thus subtract all found repetitions.
-		$named_groups_count -= $repeated_names_count;
+        $repeated_names_count = self::count_repeated_names($named_groups);
+        // Repeated names (if any) only count once, thus subtract all found repetitions.
+        $named_groups_count -= $repeated_names_count;
 
-		$result = array( 'numbered' => $numbered_groups_count, 'named' => $named_groups_count);
-		return $result;
-	}
+        $result = array('numbered' => $numbered_groups_count, 'named' => $named_groups_count);
+        return $result;
+    }
 
-	/**
-	 * Returns the hellternations which are siblings to each other.
-	 * NOTE: the given $pattern is assumed to not contain escaped chars.
-	 *
-	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
-	 *
-	 * @throws Ando_Exception
-	 *
-	 * @param string $pattern a string of alternations wrapped into (?|...)
-	 *
-	 * @return array
-	 */
-	static protected function find_duplicate_numbers( $pattern )
-	{
-		$result = array();
-		$token = '(?|';
-		$token_len = strlen($token);
-		$offset = 0;
-		do
-		{
-			$start = strpos($pattern, $token, $offset);
-			if (FALSE === $start)
-			{
-				return $result;
-			}
-			$open = 1;
-			$start += $token_len;
-			for ($i = $start, $iTop = strlen($pattern); $i < $iTop; $i++)
-			{
-				//$current = $pattern[$i];
-				if ($pattern[$i] == '(')
-				{
-					$open += 1;
-				}
-				elseif ($pattern[$i] == ')')
-				{
-					$open -= 1;
-					if (0 == $open)
-					{
-						$result[$start] = substr($pattern, $start, $i - $start);
-						$offset = $i + 1;
-						break;
-					}
-				}
-			}
-		}
-		while ($i < $iTop);
-		if (0 != $open)
-		{
-			throw new Ando_Exception('Unbalanced parentheses.');
-		}
-		return $result;
-	}
+    /**
+     * Returns the hellternations which are siblings to each other.
+     * NOTE: the given $pattern is assumed to not contain escaped chars.
+     *
+     * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+     *
+     * @throws Ando_Exception
+     *
+     * @param string $pattern a string of alternations wrapped into (?|...)
+     *
+     * @return array
+     */
+    static protected
+    function find_duplicate_numbers( $pattern )
+    {
+        $result = array();
+        $token = '(?|';
+        $token_len = strlen($token);
+        $offset = 0;
+        do {
+            $start = strpos($pattern, $token, $offset);
+            if ( false === $start ) {
+                return $result;
+            }
+            $open = 1;
+            $start += $token_len;
+            for ($i = $start, $iTop = strlen($pattern); $i < $iTop; $i ++) {
+                //$current = $pattern[$i];
+                if ( $pattern[$i] == '(' ) {
+                    $open += 1;
+                } elseif ( $pattern[$i] == ')' ) {
+                    $open -= 1;
+                    if ( 0 == $open ) {
+                        $result[$start] = substr($pattern, $start, $i - $start);
+                        $offset = $i + 1;
+                        break;
+                    }
+                }
+            }
+        } while ($i < $iTop);
+        if ( 0 != $open ) {
+            throw new Ando_Exception('Unbalanced parentheses.');
+        }
+        return $result;
+    }
 
-	/**
-	 * Explodes an alternation on outer pipes.
-	 * NOTE: the given $pattern is assumed to not contain escaped chars.
-	 *
-	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
-	 *
-	 * @throws Ando_Exception
-	 *
-	 * @param string $pattern a string with balanced (possibly nested) parentheses and pipes
-	 *
-	 * @return array
-	 */
-	static protected function explode_alternation( $pattern )
-	{
-		$result = array();
-		$open = 0;
-		$start = 0;
-		for ($i = $start, $iTop = strlen($pattern); $i < $iTop; $i++)
-		{
-			//$current = $pattern[$i];
-			if ($pattern[$i] == '(')
-			{
-				$open += 1;
-			}
-			elseif ($pattern[$i] == ')')
-			{
-				$open -= 1;
-			}
-			elseif ($pattern[$i] == '|')
-			{
-				if (0 == $open)
-				{
-					$result[$start] = substr($pattern, $start, $i - $start);
-					$start = $i + 1;
-				}
-			}
-		}
-		$result[$start] = substr($pattern, $start);  // last piece of pattern
-		if (0 != $open)
-		{
-			throw new Ando_Exception('Unbalanced parentheses.');
-		}
-		return $result;
-	}
+    /**
+     * Explodes an alternation on outer pipes.
+     * NOTE: the given $pattern is assumed to not contain escaped chars.
+     *
+     * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+     *
+     * @throws Ando_Exception
+     *
+     * @param string $pattern a string with balanced (possibly nested) parentheses and pipes
+     *
+     * @return array
+     */
+    static protected
+    function explode_alternation( $pattern )
+    {
+        $result = array();
+        $open = 0;
+        $start = 0;
+        for ($i = $start, $iTop = strlen($pattern); $i < $iTop; $i ++) {
+            //$current = $pattern[$i];
+            if ( $pattern[$i] == '(' ) {
+                $open += 1;
+            } elseif ( $pattern[$i] == ')' ) {
+                $open -= 1;
+            } elseif ( $pattern[$i] == '|' ) {
+                if ( 0 == $open ) {
+                    $result[$start] = substr($pattern, $start, $i - $start);
+                    $start = $i + 1;
+                }
+            }
+        }
+        $result[$start] = substr($pattern, $start);  // last piece of pattern
+        if ( 0 != $open ) {
+            throw new Ando_Exception('Unbalanced parentheses.');
+        }
+        return $result;
+    }
 
-	/**
-	 * Returns how many groups (numbered or named) there are in the given $pattern
-	 *
-	 * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
-	 *
-	 * @param string $pattern
-	 *
-	 * @return array
-	 */
-	static public function count_matches( $pattern )
-	{
-		$simplified_pattern = self::remove_escaped_chars($pattern);
-		$result = self::count_groups_ignoring_duplicate_numbers($simplified_pattern);
+    /**
+     * Returns how many groups (numbered or named) there are in the given $pattern
+     *
+     * @link http://andowebsit.es/blog/noteslog.com/post/how-to-count-expected-matches-of-a-php-regular-expression/
+     *
+     * @param string $pattern
+     *
+     * @return array
+     */
+    static public
+    function count_matches( $pattern )
+    {
+        $simplified_pattern = self::remove_escaped_chars($pattern);
+        $result = self::count_groups_ignoring_duplicate_numbers($simplified_pattern);
 
-		$hellternations = self::find_duplicate_numbers($pattern);
-		if (empty($hellternations))
-		{
-			return $result;
-		}
+        $hellternations = self::find_duplicate_numbers($pattern);
+        if ( empty($hellternations) ) {
+            return $result;
+        }
 
-		foreach ($hellternations as $hellternation)
-		{
-			// undo the count of the current $hellternation already added to $result ($result -= $easy)
-			$easy = self::count_groups_ignoring_duplicate_numbers($hellternation);
-			$result['numbered'] -= $easy['numbered'];
+        foreach ($hellternations as $hellternation) {
+            // undo the count of the current $hellternation already added to $result ($result -= $easy)
+            $easy = self::count_groups_ignoring_duplicate_numbers($hellternation);
+            $result['numbered'] -= $easy['numbered'];
 
-			// then add only the maximum number of groups captured across all the alternatives ($result += $max)
-			$max = 0;
-			$pieces = self::explode_alternation($hellternation);
-			foreach ($pieces as $piece)
-			{
-				$count = self::count_matches($piece);
-				if ($max < $count['numbered']) {
-					$max = $count['numbered'];
-				}
-			}
-			$result['numbered'] += $max;
-		}
-		return $result;
-	}
+            // then add only the maximum number of groups captured across all the alternatives ($result += $max)
+            $max = 0;
+            $pieces = self::explode_alternation($hellternation);
+            foreach ($pieces as $piece) {
+                $count = self::count_matches($piece);
+                if ( $max < $count['numbered'] ) {
+                    $max = $count['numbered'];
+                }
+            }
+            $result['numbered'] += $max;
+        }
+        return $result;
+    }
 
 }
 

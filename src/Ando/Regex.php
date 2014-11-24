@@ -3,109 +3,15 @@
 class Ando_Regex
 {
 	/*
-
-	TODO add support for self-backreferences (those that refers the same group they are into)
-		-- http://php.net/manual/en/regexp.reference.back-references.php
-		- these should simply be considered like any other, so I think all is fine
-
-	TODO add support for numbered forward references like \1, ,, \9
-		-- http://php.net/manual/en/regexp.reference.back-references.php
-		- refer to groups defined later in the regex
-		- only one digit
-
-	TODO add support for numbered backreferences like \g1, .. \g99 and their synonyms \g{1}, .. \g{99}
-		-- http://php.net/manual/en/regexp.reference.back-references.php
-
-	TODO add support for relative numbered backreferences like \g-1, \g-2 .. and (their synonyms) \g{-1}, \g{-2} ..
-		-- http://php.net/manual/en/regexp.reference.back-references.php
-	    - capturing group that can be found by counting as many opening parentheses of named or numbered
-	      capturing groups as specified by the number from right to left starting at the backreference.
-		- "The use of the \g sequence with a negative number signifies a relative reference. For example,
-		  (foo)(bar)\g{-1} would match the sequence "foobarbar" and (foo)(bar)\g{-2} matches "foobarfoo". This can be
-		  useful in long patterns as an alternative to keeping track of the number of subpatterns in order to reference
-		  a specific previous subpattern."
-
-	TODO add support for recursive numbered backreferences like (?1), (?2), ...
-		-- inside recursion (http://php.net/manual/en/regexp.reference.recursive.php)
-
-	TODO add support for named backreferences like (?P=name), \k<name>, \k'name', \k{name} and \g{name}
-		-- http://php.net/manual/en/regexp.reference.back-references.php
-		- these should simply be ignored, so I think all is fine
-	   recursive named backreferences like (?P>name) and (?&name)
-		-- inside recursion (http://php.net/manual/en/regexp.reference.recursive.php)
-		- these should simply be ignored, so I think all is fine
-
-	TODO add support for lexical numbered backreferences like (?1), (?2), ... outside recursion
-		- note that (?1), (?2), ... outside recursion work like lexical backreferences, meaning that they represent a
-		   previous group as it was defined not as it will be matched: example
-		     @(sens|respons)e and (?1)ibility@  is a shortcut for  @(sens|respons)e and (?:sens|respons)ibility@
-		     thus both expressions match any of
-		       - "sense and sensibility",
-		       - "response and responsibility",
-		       - "sense and responsibility",
-		       - "response and sensibility",
-		     while @(sens|respons)e and \1ibility@ only matches
-		       - "sense and sensibility"
-		       - "response and responsibility"
-
-	TODO add support for lexical named backreferences like (?P>name) and (?&name) outside recursion
-		-- for symmetry these could exist.. not sure though
-		- these should simply be ignored, so I think all is fine
-
-	TODO add support for relative numbered backreferences like (?-1), (?-2)
-	    - they are mentioned in the comment at http://php.net/manual/en/regexp.reference.recursive.php#111935
-	    - I tried them and they work perfectly: https://xrg.es/#1m7mxeo (link valid until 22/11/2015)
-	    - comparing with (6) I wonder if these are to be considered lexically too, but for symmetry I'd say yes...
-	    - under the assumption that no $variable appears in between a relative backreference and the group it refers to,
-	      these (new to me) kind of backreferences could be used to solve the numbered backreferences problem when one
-	      wants to reuse expressions inside other expressions, exactly like the comment above suggests.
-	    - if instead a $variable appears in between a relative backreference and the group it refers to then all the
-	      code of this class for composing expressions still makes sense.
-
-	TODO add support for comments like (?# ... ) -- everything inside is ignored !!
-
-	TODO add support for comments like # ... \n -- only when the PCRE_EXTENDED is set ('#' not escaped nor into [])
-
-	(*1) "If any kind of assertion contains capturing subpatterns within it, these are counted for the purposes of
+	NOTES:
+	(1) "If any kind of assertion contains capturing subpatterns within it, these are counted for the purposes of
 	     numbering the capturing subpatterns in the whole pattern. However, substring capturing is carried out only for
 	     positive assertions, because it does not make sense for negative assertions."
 		-- http://php.net/manual/en/regexp.reference.assertions.php
 		- I've tried it at https://xrg.es/#gdoqzf
 		- the part in the above note about "substring capturing" only means that each capture in negative assertions
 	      will always be the empty string
-
-	TODO add support for named groups like (?P<name>pattern), (?<name>pattern), (?'name'pattern)
-		-- http://php.net/manual/en/regexp.reference.subpatterns.php
-		- currently only the <name> type is supported
-
-	TODO make sure that (?:a) is not a capturing group but neither (?i) is, nor (?i:a).
-
-	TODO add support for conditions that are numbered backreferences (without a backslash)
-		-- http://php.net/manual/en/regexp.reference.conditional.php
-
-	TODO document the need for balanced parentheses (a requirement in ::count_matches)
-        Exceptions are currently thrown if the pattern to count contains hellternations and those parentheses are not
-        balanced.
-
-	TODO see if ::find_duplicate_numbers and ::explode_alternation can work with recursive patterns
-	    for matching properly balanced expressions.
-
-	TODO add full support for templates like this '(a)$name(b)\1\2'
-        If $name does not contain captures then the current code works fine, but if it does contain captures, then \2
-		would not be changed and it would refer to the first capture in $name instead of referring to b.
-
-	TODO check if partial interpolations (not all variables at once) are supported already
-
-    TODO add support for recursive partial interpolations
-		- when variables refer more variables and you want to interpolate only a bunch of them
-        - prevent infinite recursion caused by variables referring themselves directly or hopping through other
-		  variables
-
-	TODO add support for additional predefined templates like '([$delimiters])(?:(?!\1).)*\1' (string)
-        - Notice that the above template is a work in progress because it doesn't support the escaping character.
-
 	*/
-
 
 	/**
      * Compose regular expressions taking care of backreferences.

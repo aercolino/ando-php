@@ -671,7 +671,7 @@ class Ando_Regex
      * @return number
      */
     static protected
-    function count_repeated_names( $named_groups )
+    function count_repeated_names( array $named_groups )
     {
         $seen = array();
         foreach ($named_groups as $named_group) {

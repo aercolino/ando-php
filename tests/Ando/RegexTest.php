@@ -494,4 +494,29 @@ class Ando_RegexTest
         $this->assertEquals('(aa)((a|b\3)+)(cc)(a|b\5)+', $r->expression());
     }
 
+    /**
+     * Issue #7
+     */
+    public function test_named_backreferences_supported() {
+        $r = Ando_Regex::def('(aa)(?P<name>pattern)(bb)(?P=name)$cc', null)
+                       ->interpolate(array('cc' => '(cc)\1'));
+        $this->assertEquals('(aa)(?P<name>pattern)(bb)(?P=name)(cc)\4', $r->expression());
+
+        $r = Ando_Regex::def('(aa)(?<name>pattern)(bb)\k<name>$cc', null)
+                       ->interpolate(array('cc' => '(cc)\1'));
+        $this->assertEquals('(aa)(?<name>pattern)(bb)\k<name>(cc)\4', $r->expression());
+
+        $r = Ando_Regex::def('(aa)(?\'name\'pattern)(bb)\k\'name\'$cc', null)
+                       ->interpolate(array('cc' => '(cc)\1'));
+        $this->assertEquals('(aa)(?\'name\'pattern)(bb)\k\'name\'(cc)\4', $r->expression());
+
+        $r = Ando_Regex::def('(aa)(?<name>pattern)(bb)\k{name}$cc', null)
+                       ->interpolate(array('cc' => '(cc)\1'));
+        $this->assertEquals('(aa)(?<name>pattern)(bb)\k{name}(cc)\4', $r->expression());
+
+        $r = Ando_Regex::def('(aa)(?<name>pattern)(bb)\g{name}$cc', null)
+                       ->interpolate(array('cc' => '(cc)\1'));
+        $this->assertEquals('(aa)(?<name>pattern)(bb)\g{name}(cc)\4', $r->expression());
+    }
+
 }

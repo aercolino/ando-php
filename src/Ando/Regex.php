@@ -142,6 +142,16 @@ class Ando_Regex
     }
 
     /**
+     * @param string $modifier
+     *
+     * @return bool
+     */
+    public function has_modifier( $modifier ) {
+        $result = false !== strpos($this->wrapper, $modifier);
+        return $result;
+    }
+
+    /**
      * Pattern for matching a generic quoted string.
      * By default it's a single quoted string with an escaping backslash.
      *
@@ -168,7 +178,7 @@ class Ando_Regex
     }
 
     /**
-     * A string whose first character is used as a delimiter and the rest as modifiers.
+     * A string whose first 2 characters are used as delimiters and the rest as modifiers.
      *
      * @var string
      */
@@ -220,9 +230,11 @@ class Ando_Regex
     public
     function __construct( $template, $wrapper = null )
     {
-        $this->variables = array();
         $this->template_set($template);
         $this->wrapper_set($wrapper);
+
+        $this->variables = array();
+        $this->remove_comments();
 
         if ( is_null($this->wrapper) ) {
             $this->expression = $this->template; // we won't unwrap it now, nor we will wrap it until we set a wrapper
@@ -639,6 +651,23 @@ class Ando_Regex
     //---
 
     /**
+     * Remove comments from the template by compressing each to an empty comment '(?#)'.
+     * This helps to greatly simplify matching against regular expressions because
+     * all remaining chars are either special chars or innocuous chars.
+     */
+    protected
+    function remove_comments()
+    {
+        if ($this->has_modifier(self::PCRE_EXTENDED_MODIFIER)) {
+            $find_middle_and_ending_comments = '@\(\?\#[^)]*\)|(?!\\\\)\#.*@';
+            $this->template = preg_replace($find_middle_and_ending_comments, '(?#)', $this->template);
+        } else {
+            $find_middle_comments = '@\(\?\#[^)]*\)@';
+            $this->template = preg_replace($find_middle_comments, '(?#)', $this->template);
+        }
+    }
+
+    /**
      * Remove escaped chars from $pattern by compressing the two characters formed by
      * the escaping char and the escaped char into a single '%'.
      * This helps to greatly simplify matching against regular expressions because
@@ -654,15 +683,12 @@ class Ando_Regex
     function remove_escaped_chars( $pattern )
     {
         $result = $pattern;
-
         $find_explicitly_escaped = '/\\\\./';
         $result = preg_replace($find_explicitly_escaped, '%', $result);
-
         // Notice that $find_implicitly_escaped is much simpler than it should because
-        // $find_explicitly_escaped has already removed difficulties (\) from $result.
+        // $find_explicitly_escaped has already removed difficulties (i.e. '\') from $result.
         $find_implicitly_escaped = '/\[[^\]]*\]/';
         $result = preg_replace($find_implicitly_escaped, '%', $result);
-
         return $result;
     }
 

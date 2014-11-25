@@ -426,4 +426,28 @@ class Ando_RegexTest
         $this->assertEquals('(?i:aa)(bb)\1(cc)\2', $r->expression());
     }
 
+    /**
+     * Issue 8 (middle)
+     */
+    public
+    function test_comments_are_ignored_in_the_middle()
+    {
+        $r = Ando_Regex::def('(?#a(a)$b(cc)\1', null)
+                       ->interpolate(array('b' => '(bb)\1'));
+        $this->assertEquals('(?#)(bb)\1(cc)\2', $r->expression());
+    }
+
+    /**
+     * Issue 8 (end)
+     */
+    public
+    function test_comments_are_ignored_at_the_end_of_the_line()
+    {
+        $r = Ando_Regex::def('aa $b # comment (aa)
+        $c (dd)', '@@' . Ando_Regex::PCRE_EXTENDED_MODIFIER)
+                       ->interpolate(array('b' => '(bb)\1', 'c' => '(cc)\1'));
+        $this->assertEquals('aa (bb)\1 (?#)
+        (cc)\2 (dd)', $r->expression());
+    }
+
 }

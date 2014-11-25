@@ -396,12 +396,34 @@ class Ando_RegexTest
     /**
      * Issue #14
      */
-    public function test_partial_interpolation() {
+    public
+    function test_partial_interpolation()
+    {
         $r = Ando_Regex::def('(aa)$b(cc)$d', null)
                        ->interpolate(array('d' => '(dd)'));
         $this->assertEquals('(aa)$b(cc)(dd)', $r->expression());
+
         $r->interpolate(array('b' => '(bb)'));
         $this->assertEquals('(aa)(bb)(cc)(dd)', $r->expression());
+    }
+
+    /**
+     * Issue #9
+     */
+    public
+    function test_non_capturing_groups()
+    {
+        $r = Ando_Regex::def('(?:aa)$b(cc)\1', null)
+                       ->interpolate(array('b' => '(bb)\1'));
+        $this->assertEquals('(?:aa)(bb)\1(cc)\2', $r->expression());
+
+        $r = Ando_Regex::def('(?:(?i)aa)$b(cc)\1', null)
+                       ->interpolate(array('b' => '(bb)\1'));
+        $this->assertEquals('(?:(?i)aa)(bb)\1(cc)\2', $r->expression());
+
+        $r = Ando_Regex::def('(?i:aa)$b(cc)\1', null)
+                       ->interpolate(array('b' => '(bb)\1'));
+        $this->assertEquals('(?i:aa)(bb)\1(cc)\2', $r->expression());
     }
 
 }

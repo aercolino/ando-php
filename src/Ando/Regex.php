@@ -512,12 +512,17 @@ class Ando_Regex
                     break;
                 case 1:  // variable
                     $name = $pieces[$i];
-                    $value = $this->variables[$name]['value'];
-                    $count = $this->variables[$name]['captures'];
-                    $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@', array($this, 'fix_variable_backreference'),
-                                                        $value);
-                    $variable_count += $count['numbered'];
-                    $this->tmp_before_count += $count['numbered'];
+                    if ( isset($this->variables[$name]) ) {
+                        $value = $this->variables[$name]['value'];
+                        $count = $this->variables[$name]['captures'];
+                        $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@',
+                                                            array($this, 'fix_variable_backreference'),
+                                                            $value);
+                        $variable_count += $count['numbered'];
+                        $this->tmp_before_count += $count['numbered'];
+                    } else {
+                        $result[$i] = '$' . $name;
+                    }
                     break;
             }
         }

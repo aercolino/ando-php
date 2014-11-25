@@ -393,4 +393,15 @@ class Ando_RegexTest
         $this->assertEquals('(aa)(bb)(cc)\1\3', $r->expression());
     }
 
+    /**
+     * Issue #14
+     */
+    public function test_partial_interpolation() {
+        $r = Ando_Regex::def('(aa)$b(cc)$d', null)
+                       ->interpolate(array('d' => '(dd)'));
+        $this->assertEquals('(aa)$b(cc)(dd)', $r->expression());
+        $r->interpolate(array('b' => '(bb)'));
+        $this->assertEquals('(aa)(bb)(cc)(dd)', $r->expression());
+    }
+
 }

@@ -484,4 +484,14 @@ class Ando_RegexTest
                        ->interpolate(array('bb' => '(bb)\1'));
         $this->assertEquals("(aa)(?'name'pattern)(bb)\\3", $r->expression());
     }
+
+    /**
+     * Issue #2
+     */
+    public function test_self_backreferences_supported() {
+        $r = Ando_Regex::def('(aa)($bb)(cc)(a|b\4)+', null)
+                       ->interpolate(array('bb' => '(a|b\1)+'));
+        $this->assertEquals('(aa)((a|b\3)+)(cc)(a|b\5)+', $r->expression());
+    }
+
 }

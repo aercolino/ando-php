@@ -427,7 +427,7 @@ class Ando_RegexTest
     }
 
     /**
-     * Issue 8 (middle)
+     * Issue #8 (middle)
      */
     public
     function test_comments_are_ignored_in_the_middle()
@@ -438,7 +438,7 @@ class Ando_RegexTest
     }
 
     /**
-     * Issue 8 (end)
+     * Issue #8 (end)
      */
     public
     function test_comments_are_ignored_at_the_end_of_the_line()
@@ -450,4 +450,38 @@ class Ando_RegexTest
         (cc)\2 (dd)', $r->expression());
     }
 
+    /**
+     * Issue #6 for (?P<name>pattern)
+     */
+    public function test_p_angled_names_supported() {
+        // To make sure that these names are supported we make one work for fixing backreferences.
+
+        $r = Ando_Regex::def('(aa)(?P<name>pattern)$bb', null)
+                       ->interpolate(array('bb' => '(bb)\1'));
+        $this->assertEquals('(aa)(?P<name>pattern)(bb)\3', $r->expression());
+    }
+
+    /**
+     * Issue #6 for (?<name>pattern)
+     */
+    public function test_angled_names_supported() {
+        // To make sure that these names are supported we make one work for fixing backreferences.
+
+        $r = Ando_Regex::def('(aa)(?<name>pattern)$bb', null)
+                       ->interpolate(array('bb' => '(bb)\1'));
+        $this->assertEquals('(aa)(?<name>pattern)(bb)\3', $r->expression());
+    }
+
+    /**
+     * Issue #6 for (?'name'pattern)
+     */
+    public function test_single_quoted_names_supported() {
+        // To make sure that these names are supported we make one work for fixing backreferences.
+
+        // using double quotes instead of single ones only to properly show the naming type
+        // IN GENERAL it's a bad idea to use double quotes because they confuse a lot...
+        $r = Ando_Regex::def("(aa)(?'name'pattern)\$bb", null)
+                       ->interpolate(array('bb' => '(bb)\1'));
+        $this->assertEquals("(aa)(?'name'pattern)(bb)\\3", $r->expression());
+    }
 }

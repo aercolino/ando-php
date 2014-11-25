@@ -182,7 +182,7 @@ class Ando_Regex
     protected $template = '';
 
     /**
-     * Temporary variables for the current interpolation.
+     * Variables to interpolate.
      *
      * @var array
      */
@@ -196,18 +196,18 @@ class Ando_Regex
     protected $expression = '';
 
     /**
-     * Number of captures in a sub-expression.
+     * Temporary array of positions of template captures before (keys) and after (values) variable substitutions.
      *
-     * @var int
+     * @var int[]
      */
-    private $captures = 0;
+    private $tmp_fixed_positions;
 
     /**
-     * Number of captures in interpolated variables.
+     * Temporary number of captures before the current interpolation of a variable.
      *
      * @var int
      */
-    private $captures_in_variables;
+    private $tmp_before_count;
 
     /**
      * Constructor.
@@ -220,6 +220,7 @@ class Ando_Regex
     public
     function __construct( $template, $wrapper = null )
     {
+        $this->variables = array();
         $this->template_set($template);
         $this->wrapper_set($wrapper);
 
@@ -374,32 +375,6 @@ class Ando_Regex
     }
 
     /**
-     * Interpolate variables into the template, taking care of backreferences.
-     *
-     * @param array $variables
-     *
-     * @return Ando_Regex
-     */
-    public
-    function interpolate( $variables = array() )
-    {
-        if ( 0 === count($variables) ) {
-            return $this;
-        }
-        foreach ($variables as $name => $value) {
-            $count = self::count_matches($value);
-            $variables[$name] = array(
-                    'value'    => $value,
-                    'captures' => $count['numbered'],
-            );
-        }
-        $this->variables = $variables;
-        $this->captures_in_variables = 0;
-        $this->expression = self::replace('@(?<!\\\\)\$(\w+)@', array($this, 'substitute_variable'), $this->template);
-        return $this;
-    }
-
-    /**
      * Unwrap.
      *
      * @param        $expression
@@ -472,22 +447,98 @@ class Ando_Regex
     }
 
     /**
-     * Substitute a single occurrence of a variable name into the template with its value.
+     * Interpolate variables into the template, taking care of backreferences.
      *
-     * @param $matches
+     * @param array $variables
      *
-     * @return mixed
+     * @return Ando_Regex
+     */
+    public
+    function interpolate( array $variables )
+    {
+        if ( 0 === count($variables) ) {
+            return $this;
+        }
+        foreach ($variables as $name => $value) {
+            $count = self::count_matches($value);
+            $variables[$name] = array(
+                    'value'    => $value,
+                    'captures' => $count,
+            );
+        }
+        $this->variables = array_merge($this->variables, $variables);
+        $template_count = self::count_matches($this->template);
+        $this->tmp_fixed_positions = range(0, $template_count['numbered']);  // init tmp_fixed_positions
+        // tmp_fixed_positions = array( 0 => 0, 1 => 1, 2 => 2, ... ), but we'll ignore 0
+        $find_unescaped_variables = '@(?<!\\\\)\$(\w+)@';
+        $pieces = preg_split($find_unescaped_variables, $this->template, - 1, PREG_SPLIT_DELIM_CAPTURE);
+        $pieces = $this->fix_backreferences($pieces);
+        $this->expression = implode('', $pieces);
+        if ( preg_match($find_unescaped_variables, $this->expression) ) {
+            $this->template = $this->expression;
+        }
+        return $this;
+    }
+
+    /**
+     * Fix all the backreferences in all the pieces, which alternate non variables and variables of the template
+     *
+     * @param array $pieces
+     *
+     * @return array
      */
     protected
-    function substitute_variable( $matches )
+    function fix_backreferences( array $pieces )
     {
-        list($name, $offset) = $matches[1];
-        $value = $this->variables[$name]['value'];
-        $before = substr($this->template, 0, $offset - 1); // 1 less because of the $ prefix
-        $before_count = self::count_matches($before);
-        $this->captures = $before_count['numbered'] + $this->captures_in_variables;
-        $result = preg_replace_callback('@\\\\(\d{1,2})@', array($this, 'fix_backreference'), $value);
-        $this->captures_in_variables += $this->variables[$name]['captures'];
+        $result = array($pieces[0]);
+        $count = self::count_matches($pieces[0]);
+        $this->tmp_before_count = $count['numbered'];
+        $non_variable_count = $count['numbered'];
+        $variable_count = 0;
+        $i_mod_2 = 0;
+        for ($i = 1, $i_top = count($pieces); $i < $i_top; $i ++) {
+            $i_mod_2 = 1 - $i_mod_2;  // this will alternate between 1 and 0, starting from 1
+            switch ($i_mod_2) {
+                case 0:  // non-variable
+                    $value = $pieces[$i];
+                    $count = self::count_matches($value);
+                    for ($j = $non_variable_count + 1, $j_top = $j + $count['numbered']; $j < $j_top; $j ++) {
+                        $this->tmp_fixed_positions[$j] = $j + $variable_count;
+                    }
+                    $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@', array($this, 'fix_template_backreference'),
+                                                        $value);
+                    $non_variable_count += $count['numbered'];
+                    $this->tmp_before_count += $count['numbered'];
+                    break;
+                case 1:  // variable
+                    $name = $pieces[$i];
+                    $value = $this->variables[$name]['value'];
+                    $count = $this->variables[$name]['captures'];
+                    $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@', array($this, 'fix_variable_backreference'),
+                                                        $value);
+                    $variable_count += $count['numbered'];
+                    $this->tmp_before_count += $count['numbered'];
+                    break;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Fix a single backreference into (a non variable part of) the template.
+     *
+     * WARNING: It only supports backreferences of the form <code>\1 .. \99</code>
+     *
+     * @param array $matches
+     *
+     * @return string
+     */
+    protected
+    function fix_template_backreference( array $matches )
+    {
+        $old = (int) $matches[1];
+        $new = $this->tmp_fixed_positions[$old];
+        $result = '\\' . $new;
         return $result;
     }
 
@@ -496,16 +547,16 @@ class Ando_Regex
      *
      * WARNING: It only supports backreferences of the form <code>\1 .. \99</code>
      *
-     * @param $matches
+     * @param array $matches
      *
      * @return string
      */
     protected
-    function fix_backreference( $matches )
+    function fix_variable_backreference( array $matches )
     {
-        $old_backreference = $matches[1];
-        $backreference = $this->captures + $old_backreference;
-        $result = '\\' . $backreference;
+        $old = (int) $matches[1];
+        $new = $this->tmp_before_count + $old;
+        $result = '\\' . $new;
         return $result;
     }
 
@@ -705,7 +756,7 @@ class Ando_Regex
             }
             $open = 1;
             $start += $token_len;
-            for ($i = $start, $iTop = strlen($pattern); $i < $iTop; $i ++) {
+            for ($i = $start, $i_top = strlen($pattern); $i < $i_top; $i ++) {
                 //$current = $pattern[$i];
                 if ( $pattern[$i] == '(' ) {
                     $open += 1;
@@ -718,7 +769,7 @@ class Ando_Regex
                     }
                 }
             }
-        } while ($i < $iTop);
+        } while ($i < $i_top);
         if ( 0 != $open ) {
             throw new Ando_Exception('Unbalanced parentheses.');
         }
@@ -743,7 +794,7 @@ class Ando_Regex
         $result = array();
         $open = 0;
         $start = 0;
-        for ($i = $start, $iTop = strlen($pattern); $i < $iTop; $i ++) {
+        for ($i = $start, $i_top = strlen($pattern); $i < $i_top; $i ++) {
             //$current = $pattern[$i];
             if ( $pattern[$i] == '(' ) {
                 $open += 1;

@@ -212,7 +212,7 @@ class Ando_Regex
      *
      * @var int[]
      */
-    private $tmp_fixed_positions;
+    private $tmp_new_references;
 
     /**
      * Temporary number of captures before the current interpolation of a variable.
@@ -482,11 +482,13 @@ class Ando_Regex
         }
         $this->variables = array_merge($this->variables, $variables);
         $template_count = self::count_matches($this->template);
-        $this->tmp_fixed_positions = range(0, $template_count['numbered']);  // init tmp_fixed_positions
-        // tmp_fixed_positions = array( 0 => 0, 1 => 1, 2 => 2, ... ), but we'll ignore 0
+        $this->tmp_new_references = range(0, $template_count['numbered']);  // init tmp_new_references
+        // tmp_new_references = [ 0 => 0, 1 => 1, 2 => 2, ... ], but we'll ignore 0
         $find_unescaped_variables = '@(?<!\\\\)\$(\w+)@';
+
         $pieces = preg_split($find_unescaped_variables, $this->template, -1, PREG_SPLIT_DELIM_CAPTURE);
         $pieces = $this->fix_backreferences($pieces);
+
         $this->expression = implode('', $pieces);
         if ( preg_match($find_unescaped_variables, $this->expression) ) {
             $this->template = $this->expression;
@@ -495,7 +497,8 @@ class Ando_Regex
     }
 
     /**
-     * Fix all the backreferences in all the pieces, which alternate non variables and variables of the template
+     * Fix all the backreferences in all the pieces, which alternate non variables and variables of the template.
+     * Example: template == 'aaa $foo bbb $bar ccc' --> pieces == ['aaa ', 'foo', ' bbb ', 'bar', ' ccc']
      *
      * @param array $pieces
      *
@@ -517,7 +520,7 @@ class Ando_Regex
                     $value = $pieces[$i];
                     $count = self::count_matches($value);
                     for ($j = $non_variable_count + 1, $j_top = $j + $count['numbered']; $j < $j_top; $j++) {
-                        $this->tmp_fixed_positions[$j] = $j + $variable_count;
+                        $this->tmp_new_references[$j] = $j + $variable_count;
                     }
                     $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@', array($this, 'fix_template_backreference'),
                                                         $value);
@@ -556,7 +559,7 @@ class Ando_Regex
     function fix_template_backreference( array $matches )
     {
         $old = (int) $matches[1];
-        $new = $this->tmp_fixed_positions[$old];
+        $new = $this->tmp_new_references[$old];
         $result = '\\' . $new;
         return $result;
     }

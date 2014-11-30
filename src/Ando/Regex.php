@@ -146,7 +146,9 @@ class Ando_Regex
      *
      * @return bool
      */
-    public function has_modifier( $modifier ) {
+    public
+    function has_modifier( $modifier )
+    {
         $result = false !== strpos($this->wrapper, $modifier);
         return $result;
     }
@@ -412,7 +414,7 @@ class Ando_Regex
         if ( preg_match('@' . self::option_same_name_groups_ok() . '^(?:' . $delimited . ')' . '(?<modifiers>' .
                         self::pattern_global_modifiers() . ')$@', $no_esc, $matches) ) {
             // due to matching against $no_esc, we can't just take $matches['expression'];
-            $result = substr($expression, 1, - 1 - strlen($matches['modifiers']));
+            $result = substr($expression, 1, -1 - strlen($matches['modifiers']));
             $wrapper = $matches['delimiter_1'] . $matches['delimiter_2'] . $matches['modifiers'];
         }
 
@@ -483,7 +485,7 @@ class Ando_Regex
         $this->tmp_fixed_positions = range(0, $template_count['numbered']);  // init tmp_fixed_positions
         // tmp_fixed_positions = array( 0 => 0, 1 => 1, 2 => 2, ... ), but we'll ignore 0
         $find_unescaped_variables = '@(?<!\\\\)\$(\w+)@';
-        $pieces = preg_split($find_unescaped_variables, $this->template, - 1, PREG_SPLIT_DELIM_CAPTURE);
+        $pieces = preg_split($find_unescaped_variables, $this->template, -1, PREG_SPLIT_DELIM_CAPTURE);
         $pieces = $this->fix_backreferences($pieces);
         $this->expression = implode('', $pieces);
         if ( preg_match($find_unescaped_variables, $this->expression) ) {
@@ -508,13 +510,13 @@ class Ando_Regex
         $non_variable_count = $count['numbered'];
         $variable_count = 0;
         $i_mod_2 = 0;
-        for ($i = 1, $i_top = count($pieces); $i < $i_top; $i ++) {
+        for ($i = 1, $i_top = count($pieces); $i < $i_top; $i++) {
             $i_mod_2 = 1 - $i_mod_2;  // this will alternate between 1 and 0, starting from 1
             switch ($i_mod_2) {
                 case 0:  // non-variable
                     $value = $pieces[$i];
                     $count = self::count_matches($value);
-                    for ($j = $non_variable_count + 1, $j_top = $j + $count['numbered']; $j < $j_top; $j ++) {
+                    for ($j = $non_variable_count + 1, $j_top = $j + $count['numbered']; $j < $j_top; $j++) {
                         $this->tmp_fixed_positions[$j] = $j + $variable_count;
                     }
                     $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@', array($this, 'fix_template_backreference'),
@@ -592,10 +594,10 @@ class Ando_Regex
      * @return null|string|array
      */
     static public
-    function replace( $pattern, $callback, $subject, $limit = - 1, &$count = 0 )
+    function replace( $pattern, $callback, $subject, $limit = -1, &$count = 0 )
     {
 
-        $limit = min(array(- 1, $limit));
+        $limit = min(array(-1, $limit));
         $count = min(array(0, $count));
         $result = $subject;
 
@@ -658,7 +660,7 @@ class Ando_Regex
     protected
     function remove_comments()
     {
-        if ($this->has_modifier(self::PCRE_EXTENDED_MODIFIER)) {
+        if ( $this->has_modifier(self::PCRE_EXTENDED_MODIFIER) ) {
             $find_middle_and_ending_comments = '@\(\?\#[^)]*\)|(?!\\\\)\#.*@';
             $this->template = preg_replace($find_middle_and_ending_comments, '(?#)', $this->template);
         } else {
@@ -787,7 +789,7 @@ class Ando_Regex
             }
             $open = 1;
             $start += $token_len;
-            for ($i = $start, $i_top = strlen($pattern); $i < $i_top; $i ++) {
+            for ($i = $start, $i_top = strlen($pattern); $i < $i_top; $i++) {
                 //$current = $pattern[$i];
                 if ( $pattern[$i] == '(' ) {
                     $open += 1;
@@ -825,7 +827,7 @@ class Ando_Regex
         $result = array();
         $open = 0;
         $start = 0;
-        for ($i = $start, $i_top = strlen($pattern); $i < $i_top; $i ++) {
+        for ($i = $start, $i_top = strlen($pattern); $i < $i_top; $i++) {
             //$current = $pattern[$i];
             if ( $pattern[$i] == '(' ) {
                 $open += 1;

@@ -522,7 +522,8 @@ class Ando_Regex
                     for ($j = $non_variable_count + 1, $j_top = $j + $count['numbered']; $j < $j_top; $j++) {
                         $this->tmp_new_references[$j] = $j + $variable_count;
                     }
-                    $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@', array($this, 'fix_template_backreference'),
+                    $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@',
+                                                        array($this, 'fix_template_numbered_backreference'),
                                                         $value);
                     $non_variable_count += $count['numbered'];
                     $this->tmp_before_count += $count['numbered'];
@@ -533,7 +534,7 @@ class Ando_Regex
                         $value = $this->variables[$name]['value'];
                         $count = $this->variables[$name]['captures'];
                         $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@',
-                                                            array($this, 'fix_variable_backreference'),
+                                                            array($this, 'fix_variable_numbered_backreference'),
                                                             $value);
                         $variable_count += $count['numbered'];
                         $this->tmp_before_count += $count['numbered'];
@@ -556,7 +557,7 @@ class Ando_Regex
      * @return string
      */
     protected
-    function fix_template_backreference( array $matches )
+    function fix_template_numbered_backreference( array $matches )
     {
         $old = (int) $matches[1];
         $new = $this->tmp_new_references[$old];
@@ -574,7 +575,7 @@ class Ando_Regex
      * @return string
      */
     protected
-    function fix_variable_backreference( array $matches )
+    function fix_variable_numbered_backreference( array $matches )
     {
         $old = (int) $matches[1];
         $new = $this->tmp_before_count + $old;

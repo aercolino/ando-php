@@ -522,9 +522,13 @@ class Ando_Regex
                     for ($j = $non_variable_count + 1, $j_top = $j + $count['numbered']; $j < $j_top; $j++) {
                         $this->tmp_new_references[$j] = $j + $variable_count;
                     }
-                    $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@',
-                                                        array($this, 'fix_template_numbered_backreference'),
-                                                        $value);
+                    $value = preg_replace_callback('@\\\\(\d{1,2})@',
+                                                   array($this, 'fix_template_numbered_backreference'),
+                                                   $value);
+                    $value = preg_replace_callback('@\(\?(\d{1,2})\)@',
+                                                   array($this, 'fix_template_lexical_numbered_backreference'),
+                                                   $value);
+                    $result[$i] = $value;
                     $non_variable_count += $count['numbered'];
                     $this->tmp_before_count += $count['numbered'];
                     break;
@@ -533,9 +537,13 @@ class Ando_Regex
                     if ( isset($this->variables[$name]) ) {
                         $value = $this->variables[$name]['value'];
                         $count = $this->variables[$name]['captures'];
-                        $result[$i] = preg_replace_callback('@\\\\(\d{1,2})@',
-                                                            array($this, 'fix_variable_numbered_backreference'),
-                                                            $value);
+                        $value = preg_replace_callback('@\\\\(\d{1,2})@',
+                                                       array($this, 'fix_variable_numbered_backreference'),
+                                                       $value);
+                        $value = preg_replace_callback('@\(\?(\d{1,2})\)@',
+                                                       array($this, 'fix_variable_lexical_numbered_backreference'),
+                                                       $value);
+                        $result[$i] = $value;
                         $variable_count += $count['numbered'];
                         $this->tmp_before_count += $count['numbered'];
                     } else {
@@ -580,6 +588,42 @@ class Ando_Regex
         $old = (int) $matches[1];
         $new = $this->tmp_before_count + $old;
         $result = '\\' . $new;
+        return $result;
+    }
+
+    /**
+     * Fix a single backreference into (a non variable part of) the template.
+     *
+     * WARNING: It only supports backreferences of the form <code>(?1) .. (?99)</code>
+     *
+     * @param array $matches
+     *
+     * @return string
+     */
+    protected
+    function fix_template_lexical_numbered_backreference( array $matches )
+    {
+        $old = (int) $matches[1];
+        $new = $this->tmp_new_references[$old];
+        $result = '(?' . $new . ')';
+        return $result;
+    }
+
+    /**
+     * Fix a single backreference into a variable value.
+     *
+     * WARNING: It only supports backreferences of the form <code>(?1) .. (?99)</code>
+     *
+     * @param array $matches
+     *
+     * @return string
+     */
+    protected
+    function fix_variable_lexical_numbered_backreference( array $matches )
+    {
+        $old = (int) $matches[1];
+        $new = $this->tmp_before_count + $old;
+        $result = '(?' . $new . ')';
         return $result;
     }
 

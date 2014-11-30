@@ -519,4 +519,16 @@ class Ando_RegexTest
         $this->assertEquals('(aa)(?<name>pattern)(bb)\g{name}(cc)\4', $r->expression());
     }
 
+    /**
+     * Issue #5, limited to (?1)..(?99) kind.
+     */
+    public function test_lexical_numbered_backreferences_supported() {
+        $r = Ando_Regex::def('$aa (sens|respons)e and (?1)ibility', null)
+                       ->interpolate(array('aa' => '(bb)(cc)'));
+        $this->assertEquals('(bb)(cc) (sens|respons)e and (?3)ibility', $r->expression());
+
+        $r = Ando_Regex::def('(bb)(cc) $aa', null)
+                       ->interpolate(array('aa' => '(sens|respons)e and (?1)ibility'));
+        $this->assertEquals('(bb)(cc) (sens|respons)e and (?3)ibility', $r->expression());
+    }
 }

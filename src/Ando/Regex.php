@@ -28,6 +28,16 @@ class Ando_Regex
         return 'PCRE';
     }
 
+    /**
+     * Supported backreference types.
+     *
+     * @var array
+     */
+    static protected $backreference_types = array(
+            'numbered'         => array('find' => '@\\\\(\d{1,2})@',   'replace' => '\\%s'),
+            'lexical_numbered' => array('find' => '@\(\?(\d{1,2})\)@', 'replace' => '(?%s)'),
+    );
+
     /*
      * The following constants are useful to better document code using them.
      */
@@ -220,6 +230,13 @@ class Ando_Regex
      * @var int
      */
     private $tmp_before_count;
+
+    /**
+     * Temporary backreference type currently considered.
+     *
+     * @var string
+     */
+    private $tmp_backreference_type;
 
     /**
      * Constructor.
@@ -522,12 +539,11 @@ class Ando_Regex
                     for ($j = $non_variable_count + 1, $j_top = $j + $count['numbered']; $j < $j_top; $j++) {
                         $this->tmp_new_references[$j] = $j + $variable_count;
                     }
-                    $value = preg_replace_callback('@\\\\(\d{1,2})@',
-                                                   array($this, 'fix_template_numbered_backreference'),
-                                                   $value);
-                    $value = preg_replace_callback('@\(\?(\d{1,2})\)@',
-                                                   array($this, 'fix_template_lexical_numbered_backreference'),
-                                                   $value);
+                    foreach (self::$backreference_types as $type => $search) {
+                        $this->tmp_backreference_type = $type;
+                        $value = preg_replace_callback($search['find'],
+                                                       array($this, 'fix_template_backreference'), $value);
+                    }
                     $result[$i] = $value;
                     $non_variable_count += $count['numbered'];
                     $this->tmp_before_count += $count['numbered'];
@@ -537,12 +553,11 @@ class Ando_Regex
                     if ( isset($this->variables[$name]) ) {
                         $value = $this->variables[$name]['value'];
                         $count = $this->variables[$name]['captures'];
-                        $value = preg_replace_callback('@\\\\(\d{1,2})@',
-                                                       array($this, 'fix_variable_numbered_backreference'),
-                                                       $value);
-                        $value = preg_replace_callback('@\(\?(\d{1,2})\)@',
-                                                       array($this, 'fix_variable_lexical_numbered_backreference'),
-                                                       $value);
+                        foreach (self::$backreference_types as $type => $search) {
+                            $this->tmp_backreference_type = $type;
+                            $value = preg_replace_callback($search['find'],
+                                                           array($this, 'fix_variable_backreference'), $value);
+                        }
                         $result[$i] = $value;
                         $variable_count += $count['numbered'];
                         $this->tmp_before_count += $count['numbered'];
@@ -565,11 +580,12 @@ class Ando_Regex
      * @return string
      */
     protected
-    function fix_template_numbered_backreference( array $matches )
+    function fix_template_backreference( array $matches )
     {
         $old = (int) $matches[1];
         $new = $this->tmp_new_references[$old];
-        $result = '\\' . $new;
+        $pattern = self::$backreference_types[$this->tmp_backreference_type]['replace'];
+        $result = sprintf($pattern, $new);
         return $result;
     }
 
@@ -583,47 +599,12 @@ class Ando_Regex
      * @return string
      */
     protected
-    function fix_variable_numbered_backreference( array $matches )
+    function fix_variable_backreference( array $matches )
     {
         $old = (int) $matches[1];
         $new = $this->tmp_before_count + $old;
-        $result = '\\' . $new;
-        return $result;
-    }
-
-    /**
-     * Fix a single backreference into (a non variable part of) the template.
-     *
-     * WARNING: It only supports backreferences of the form <code>(?1) .. (?99)</code>
-     *
-     * @param array $matches
-     *
-     * @return string
-     */
-    protected
-    function fix_template_lexical_numbered_backreference( array $matches )
-    {
-        $old = (int) $matches[1];
-        $new = $this->tmp_new_references[$old];
-        $result = '(?' . $new . ')';
-        return $result;
-    }
-
-    /**
-     * Fix a single backreference into a variable value.
-     *
-     * WARNING: It only supports backreferences of the form <code>(?1) .. (?99)</code>
-     *
-     * @param array $matches
-     *
-     * @return string
-     */
-    protected
-    function fix_variable_lexical_numbered_backreference( array $matches )
-    {
-        $old = (int) $matches[1];
-        $new = $this->tmp_before_count + $old;
-        $result = '(?' . $new . ')';
+        $pattern = self::$backreference_types[$this->tmp_backreference_type]['replace'];
+        $result = sprintf($pattern, $new);
         return $result;
     }
 

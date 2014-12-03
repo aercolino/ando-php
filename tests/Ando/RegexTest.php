@@ -558,5 +558,14 @@ class Ando_RegexTest
         $r = Ando_Regex::def('$a (sens|respons)e $b (?-1)ibility', null)
                        ->interpolate(array('a' => '(aa)', 'b' => '(bb)'));
         $this->assertEquals('(aa) (sens|respons)e (bb) (?-2)ibility', $r->expression());
+
+        // Notice that there is no need to test for lexical_relative_numbered_backreferences into variable values
+        // because, even if some variable value contains some relative reference, under the hypothesis that each value
+        // must be well formed, that implies that such a value can only refer to groups captured by that same value,
+        // thus each value is atomic, and even if the value contains variables in the middle (as shown for the above
+        // template), given that we do not ever replace variables appearing in values of variables but always and only
+        // replace variables in the template, then the above test covers also this case (after the replacement takes
+        // place, the variable value containing a relative reference with a variable in the middle becomes part ot the
+        // new template).
     }
 }

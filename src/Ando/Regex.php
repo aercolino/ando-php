@@ -28,16 +28,6 @@ class Ando_Regex
         return 'PCRE';
     }
 
-    /**
-     * Supported backreference types.
-     *
-     * @var array
-     */
-    static protected $backreference_types = array(
-            'numbered'         => array('find' => '@\\\\(\d{1,2})@',   'replace' => '\\%s'),
-            'lexical_numbered' => array('find' => '@\(\?(\d{1,2})\)@', 'replace' => '(?%s)'),
-    );
-
     /*
      * The following constants are useful to better document code using them.
      */
@@ -491,13 +481,15 @@ class Ando_Regex
             return $this;
         }
         foreach ($variables as $name => $value) {
+            if (isset($this->variables[$name])) {
+                continue;
+            }
             $count = self::count_matches($value);
-            $variables[$name] = array(
+            $this->variables[$name] = array(
                     'value'    => $value,
                     'captures' => $count,
             );
         }
-        $this->variables = array_merge($this->variables, $variables);
         $template_count = self::count_matches($this->template);
         $this->tmp_new_references = range(0, $template_count['numbered']);  // init tmp_new_references
         // tmp_new_references = [ 0 => 0, 1 => 1, 2 => 2, ... ], but we'll ignore 0
@@ -512,6 +504,17 @@ class Ando_Regex
         }
         return $this;
     }
+
+    /**
+     * Supported backreference types.
+     *
+     * @var array
+     */
+    static protected $backreference_types = array(
+            'numbered'                  => array('find' => '@\\\\(\d{1,2})@', 'replace' => '\\%s'),
+            'lexical_numbered'          => array('find' => '@\(\?(\d{1,2})\)@', 'replace' => '(?%s)'),
+            'lexical_relative_numbered' => array('find' => '@\(\?(-\d{1,2})\)@', 'replace' => '(?-%s)'),
+    );
 
     /**
      * Fix all the backreferences in all the pieces, which alternate non variables and variables of the template.

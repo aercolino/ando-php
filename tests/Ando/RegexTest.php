@@ -451,32 +451,18 @@ class Ando_RegexTest
     }
 
     /**
-     * Issue #6 for (?P<name>pattern)
+     * Issue #6
      */
-    public function test_p_angled_names_supported() {
-        // To make sure that these names are supported we make one work for fixing backreferences.
+    public function test_named_groups_supported() {
+        // These tests only confirm that named_groups are counted as numbered groups too.
 
         $r = Ando_Regex::def('(aa)(?P<name>pattern)$bb', null)
                        ->interpolate(array('bb' => '(bb)\1'));
         $this->assertEquals('(aa)(?P<name>pattern)(bb)\3', $r->expression());
-    }
-
-    /**
-     * Issue #6 for (?<name>pattern)
-     */
-    public function test_angled_names_supported() {
-        // To make sure that these names are supported we make one work for fixing backreferences.
 
         $r = Ando_Regex::def('(aa)(?<name>pattern)$bb', null)
                        ->interpolate(array('bb' => '(bb)\1'));
         $this->assertEquals('(aa)(?<name>pattern)(bb)\3', $r->expression());
-    }
-
-    /**
-     * Issue #6 for (?'name'pattern)
-     */
-    public function test_single_quoted_names_supported() {
-        // To make sure that these names are supported we make one work for fixing backreferences.
 
         // using double quotes instead of single ones only to properly show the naming type
         // IN GENERAL it's a bad idea to use double quotes because they confuse a lot...
@@ -498,6 +484,8 @@ class Ando_RegexTest
      * Issue #7
      */
     public function test_named_backreferences_supported() {
+        // These tests only confirm that named_backreferences are ignored when counting groups.
+
         $r = Ando_Regex::def('(aa)(?P<name>pattern)(bb)(?P=name)$cc', null)
                        ->interpolate(array('cc' => '(cc)\1'));
         $this->assertEquals('(aa)(?P<name>pattern)(bb)(?P=name)(cc)\4', $r->expression());
@@ -520,7 +508,7 @@ class Ando_RegexTest
     }
 
     /**
-     * Issue #5, limited to (?1)..(?99) kind.
+     * Issue #5
      */
     public function test_lexical_numbered_backreferences_supported() {
         $r = Ando_Regex::def('$aa (sens|respons)e and (?1)ibility', null)
@@ -530,5 +518,45 @@ class Ando_RegexTest
         $r = Ando_Regex::def('(bb)(cc) $aa', null)
                        ->interpolate(array('aa' => '(sens|respons)e and (?1)ibility'));
         $this->assertEquals('(bb)(cc) (sens|respons)e and (?3)ibility', $r->expression());
+    }
+
+    /**
+     * Issue #5
+     */
+    public function test_lexical_named_backreferences_supported() {
+        // These tests only confirm that lexical_named_backreferences are ignored when counting groups.
+
+        // palindromes: http://www.regular-expressions.info/recursecapture.html
+        $r = Ando_Regex::def('(\b(?<word>(?<letter>[a-z])(?&word)\g{letter}|[a-z])\b)|$cc', null)
+                       ->interpolate(array('cc' => '(cc)\1'));
+        $this->assertEquals('(\b(?<word>(?<letter>[a-z])(?&word)\g{letter}|[a-z])\b)|(cc)\4', $r->expression());
+
+        $r = Ando_Regex::def('(\b(?<word>(?<letter>[a-z])(?P>word)\g{letter}|[a-z])\b)|$cc', null)
+                       ->interpolate(array('cc' => '(cc)\1'));
+        $this->assertEquals('(\b(?<word>(?<letter>[a-z])(?P>word)\g{letter}|[a-z])\b)|(cc)\4', $r->expression());
+    }
+
+    /**
+     * Issue #5
+     *
+     *   old: (B)1       (A)2x
+     *           |          |
+     *           v          v
+     *   new: (C)2   3   (D)4x
+     *
+     * los backreferences relativos los debo contar como si fueran grupos (pero separadamente del resto de grupos)
+     * de manera que cuando quiera ajustarlos sólo debo mirar el tmp_new_references para calcular el ajuste
+     *
+     * en old, '$a (sens|respons)e $b (?-1)ibility'      tiene (?-1) porque  1 - 2x == -1
+     * en new, '(aa) (sens|respons)e (bb) (?-2)ibility'  tiene (?-2) porque  2 - 4x == -2
+     *
+     * entonces, (1) si los backreferences relativos los cuento como grupos, la correspondencia de old a new está ya
+     * implementada y podré obtener que 2x -> 4x; (2) mirando en old, (?-1) me lleva de 2x a 1; (3) mirando la
+     * coorespondencia, 1 -> 2; finalmente, 2 - 4x = -2, o sea (?-1) => (?-2)
+     */
+    public function test_lexical_relative_numbered_backreferences_supported() {
+        $r = Ando_Regex::def('$a (sens|respons)e $b (?-1)ibility', null)
+                       ->interpolate(array('a' => '(aa)', 'b' => '(bb)'));
+        $this->assertEquals('(aa) (sens|respons)e (bb) (?-2)ibility', $r->expression());
     }
 }

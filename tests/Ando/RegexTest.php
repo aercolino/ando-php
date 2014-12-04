@@ -552,28 +552,6 @@ class Ando_RegexTest
     public
     function test_lexical_relative_backreferences_supported()
     {
-        /**
-         * before: '$a (xx) $b ((?-2)yy) (cc) $d (?-1) (ee)'
-         * after:  '(aa) (xx) (bb) ((?-3)yy) (cc) (dd)(dd) (?-3) (ee)'
-         *
-         * Positions of capturing groups: (before and after interpolation)
-         *   before  ->  after
-         *     A  1      2  E
-         *        2      4
-         *     B  3      5  F
-         *        4      8
-         *
-         * Positions of relative backreferences: (before and after interpolation)
-         *   before  ->  after
-         *     C  3      5  G
-         *     D  4      8  H
-         *
-         *   A - C == 1 - 3 == -2 => (?-2)
-         *   B - D == 3 - 4 == -1 => (?-1)
-         *
-         *   E - G == 2 - 5 == -3 => (?-3)
-         *   F - H == 5 - 8 == -3 => (?-3)
-         */
         $r = Ando_Regex::def('$a (xx) $b ((?-2)yy) (cc) $d (?-1) (ee)', null)
                        ->interpolate(array('a' => '(aa)', 'b' => '(bb)', 'd' => '(dd)(dd)'));
         $this->assertEquals('(aa) (xx) (bb) ((?-3)yy) (cc) (dd)(dd) (?-3) (ee)', $r->expression());

@@ -215,6 +215,13 @@ class Ando_Regex
     private $tmp_new_references;
 
     /**
+     * Temporary array of positions of template relative backreferences before and after variable substitutions.
+     *
+     * @var int[]
+     */
+    private $tmp_rel_references;
+
+    /**
      * Temporary number of captures before the current interpolation of a variable.
      *
      * @var int
@@ -467,6 +474,42 @@ class Ando_Regex
         return $result;
     }
 
+    protected
+    function make_new_references( $subject )
+    {
+        $template_count = self::count_matches($subject);
+        $result = range(0, $template_count['numbered']);  // init tmp_new_references
+        return $result;
+    }
+
+    protected
+    function make_rel_references( $subject )
+    {
+        $result = array();
+        $pieces = preg_split(self::$backreference_types['lexical_relative']['find'], $subject);
+        if ( 1 == count($pieces) ) {
+            return $result;
+        }
+        $before_count = 0;
+        for ($i = 0, $i_top = count($pieces); $i < $i_top; $i++) {
+            $count = self::count_matches($pieces[$i]);
+            $before_count += $count['numbered'];
+            $result[] = $before_count + 1;
+        }
+        return $result;
+    }
+
+    /**
+     * Supported backreference types.
+     *
+     * @var array
+     */
+    static protected $backreference_types = array(
+            'numbered'         => array('find' => '@\\\\(\d{1,2})@', 'replace' => '\\%s'),
+            'lexical_numbered' => array('find' => '@\(\?(\d{1,2})\)@', 'replace' => '(?%s)'),
+            'lexical_relative' => array('find' => '@\(\?-(\d{1,2})\)@', 'replace' => '(?-%s)'),
+    );
+
     /**
      * Interpolate variables into the template, taking care of backreferences.
      *
@@ -481,7 +524,7 @@ class Ando_Regex
             return $this;
         }
         foreach ($variables as $name => $value) {
-            if (isset($this->variables[$name])) {
+            if ( isset($this->variables[$name]) ) {
                 continue;
             }
             $count = self::count_matches($value);
@@ -490,31 +533,25 @@ class Ando_Regex
                     'captures' => $count,
             );
         }
-        $template_count = self::count_matches($this->template);
-        $this->tmp_new_references = range(0, $template_count['numbered']);  // init tmp_new_references
+        $this->tmp_new_references = $this->make_new_references($this->template);
+        $this->tmp_rel_references['before'] = $this->make_rel_references($this->template);
+
         // tmp_new_references = [ 0 => 0, 1 => 1, 2 => 2, ... ], but we'll ignore 0
         $find_unescaped_variables = '@(?<!\\\\)\$(\w+)@';
-
         $pieces = preg_split($find_unescaped_variables, $this->template, -1, PREG_SPLIT_DELIM_CAPTURE);
         $pieces = $this->fix_backreferences($pieces);
-
         $this->expression = implode('', $pieces);
+
+        $this->tmp_rel_references['after'] = $this->make_rel_references($this->expression);
+        $this->expression = preg_replace_callback(self::$backreference_types['lexical_relative']['find'],
+                                                  array($this, 'fix_lexical_relative_backreference'),
+                                                  $this->expression);
+
         if ( preg_match($find_unescaped_variables, $this->expression) ) {
             $this->template = $this->expression;
         }
         return $this;
     }
-
-    /**
-     * Supported backreference types.
-     *
-     * @var array
-     */
-    static protected $backreference_types = array(
-            'numbered'                  => array('find' => '@\\\\(\d{1,2})@', 'replace' => '\\%s'),
-            'lexical_numbered'          => array('find' => '@\(\?(\d{1,2})\)@', 'replace' => '(?%s)'),
-            'lexical_relative_numbered' => array('find' => '@\(\?(-\d{1,2})\)@', 'replace' => '(?-%s)'),
-    );
 
     /**
      * Fix all the backreferences in all the pieces, which alternate non variables and variables of the template.
@@ -527,6 +564,7 @@ class Ando_Regex
     protected
     function fix_backreferences( array $pieces )
     {
+        $backreference_types = array('numbered', 'lexical_numbered');
         $result = array($pieces[0]);
         $count = self::count_matches($pieces[0]);
         $this->tmp_before_count = $count['numbered'];
@@ -542,9 +580,9 @@ class Ando_Regex
                     for ($j = $non_variable_count + 1, $j_top = $j + $count['numbered']; $j < $j_top; $j++) {
                         $this->tmp_new_references[$j] = $j + $variable_count;
                     }
-                    foreach (self::$backreference_types as $type => $search) {
+                    foreach ($backreference_types as $type) {
                         $this->tmp_backreference_type = $type;
-                        $value = preg_replace_callback($search['find'],
+                        $value = preg_replace_callback(self::$backreference_types[$type]['find'],
                                                        array($this, 'fix_template_backreference'), $value);
                     }
                     $result[$i] = $value;
@@ -556,9 +594,9 @@ class Ando_Regex
                     if ( isset($this->variables[$name]) ) {
                         $value = $this->variables[$name]['value'];
                         $count = $this->variables[$name]['captures'];
-                        foreach (self::$backreference_types as $type => $search) {
+                        foreach ($backreference_types as $type) {
                             $this->tmp_backreference_type = $type;
-                            $value = preg_replace_callback($search['find'],
+                            $value = preg_replace_callback(self::$backreference_types[$type]['find'],
                                                            array($this, 'fix_variable_backreference'), $value);
                         }
                         $result[$i] = $value;
@@ -608,6 +646,56 @@ class Ando_Regex
         $new = $this->tmp_before_count + $old;
         $pattern = self::$backreference_types[$this->tmp_backreference_type]['replace'];
         $result = sprintf($pattern, $new);
+        return $result;
+    }
+
+    /**
+     * Fix a single backreference into (a non variable part of) the template.
+     *
+     * WARNING: It only supports backreferences of the form <code>\1 .. \99</code>
+     *
+     * @param array $matches
+     *
+     * @return string
+     */
+    protected
+    function fix_lexical_relative_backreference( array $matches )
+    {
+        /**
+         * before: '$a (xx) $b ((?-2)yy) (cc) $d (?-1) (ee)'
+         * after:  '(aa) (xx) (bb) ((?-3)yy) (cc) (dd)(dd) (?-3) (ee)'
+         *
+         * Positions of capturing groups: (before and after interpolation)
+         *   before  ->  after
+         *     A  1      2  E
+         *        2      4
+         *     B  3      5  F
+         *        4      8
+         *
+         * Positions of relative backreferences: (before and after interpolation)
+         *   before  ->  after
+         *     C  3      5  G
+         *     D  4      8  H
+         *
+         *   A - C == 1 - 3 == -2 => (?-2)
+         *   B - D == 3 - 4 == -1 => (?-1)
+         *
+         *   E - G == 2 - 5 == -3 => (?-3)
+         *   F - H == 5 - 8 == -3 => (?-3)
+         */
+        static $i = 0;
+                                                                                       // -2 -> -3:     -1 -> -3:
+        $relative_jumps_before = (int) $matches[1];                                    // 2 = C - A     1 = D - B
+        $reference_position_before = $this->tmp_rel_references['before'][$i];          // 3 = C         4 = D
+        $group_position_before = $reference_position_before - $relative_jumps_before;  // 1 = A         3 = B
+        $group_position_after = $this->tmp_new_references[$group_position_before];     // 2 = E         5 = F
+        $reference_position_after = $this->tmp_rel_references['after'][$i];            // 5 = G         8 = H
+        $relative_jumps_after = $reference_position_after - $group_position_after;     // 3 = G - E     3 = H - F
+
+        $pattern = self::$backreference_types['lexical_relative']['replace'];
+        $result = sprintf($pattern, $relative_jumps_after);
+
+        $i++;
         return $result;
     }
 

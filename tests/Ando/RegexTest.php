@@ -453,7 +453,9 @@ class Ando_RegexTest
     /**
      * Issue #6
      */
-    public function test_named_groups_supported() {
+    public
+    function test_named_groups_supported()
+    {
         // These tests only confirm that named_groups are counted as numbered groups too.
 
         $r = Ando_Regex::def('(aa)(?P<name>pattern)$bb', null)
@@ -474,7 +476,9 @@ class Ando_RegexTest
     /**
      * Issue #2
      */
-    public function test_self_backreferences_supported() {
+    public
+    function test_self_backreferences_supported()
+    {
         $r = Ando_Regex::def('(aa)($bb)(cc)(a|b\4)+', null)
                        ->interpolate(array('bb' => '(a|b\1)+'));
         $this->assertEquals('(aa)((a|b\3)+)(cc)(a|b\5)+', $r->expression());
@@ -483,7 +487,9 @@ class Ando_RegexTest
     /**
      * Issue #7
      */
-    public function test_named_backreferences_supported() {
+    public
+    function test_named_backreferences_supported()
+    {
         // These tests only confirm that named_backreferences are ignored when counting groups.
 
         $r = Ando_Regex::def('(aa)(?P<name>pattern)(bb)(?P=name)$cc', null)
@@ -510,7 +516,9 @@ class Ando_RegexTest
     /**
      * Issue #5
      */
-    public function test_lexical_numbered_backreferences_supported() {
+    public
+    function test_lexical_numbered_backreferences_supported()
+    {
         $r = Ando_Regex::def('$aa (sens|respons)e and (?1)ibility', null)
                        ->interpolate(array('aa' => '(bb)(cc)'));
         $this->assertEquals('(bb)(cc) (sens|respons)e and (?3)ibility', $r->expression());
@@ -523,7 +531,9 @@ class Ando_RegexTest
     /**
      * Issue #5
      */
-    public function test_lexical_named_backreferences_supported() {
+    public
+    function test_lexical_named_backreferences_supported()
+    {
         // These tests only confirm that lexical_named_backreferences are ignored when counting groups.
 
         // palindromes: http://www.regular-expressions.info/recursecapture.html
@@ -539,7 +549,9 @@ class Ando_RegexTest
     /**
      * Issue #5
      */
-    public function test_lexical_relative_backreferences_supported() {
+    public
+    function test_lexical_relative_backreferences_supported()
+    {
         /**
          * before: '$a (xx) $b ((?-2)yy) (cc) $d (?-1) (ee)'
          * after:  '(aa) (xx) (bb) ((?-3)yy) (cc) (dd)(dd) (?-3) (ee)'
@@ -576,7 +588,9 @@ class Ando_RegexTest
         // new template).
     }
 
-    public function test_count_matches_allows_to_count_broken_expressions() {
+    public
+    function test_count_matches_allows_to_count_broken_expressions()
+    {
         // Notice that the following expression is broken at the last character.
         $count = Ando_Regex::count_matches('$a (sens|respons)e $b (');
         // In this case count_matches is supposed to count that final parenthesis as a capturing group.

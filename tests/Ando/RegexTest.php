@@ -538,28 +538,35 @@ class Ando_RegexTest
 
     /**
      * Issue #5
-     *
-     *   old: (B)1       (A)2x
-     *           |          |
-     *           v          v
-     *   new: (C)2   3   (D)4x
-     *
-     * los backreferences relativos los debo contar como si fueran grupos (pero separadamente del resto de grupos)
-     * de manera que cuando quiera ajustarlos sólo debo mirar el tmp_new_references para calcular el ajuste
-     *
-     * en old, '$a (sens|respons)e $b (?-1)ibility'      tiene (?-1) porque  1 - 2x == -1
-     * en new, '(aa) (sens|respons)e (bb) (?-2)ibility'  tiene (?-2) porque  2 - 4x == -2
-     *
-     * entonces, (1) si los backreferences relativos los cuento como grupos, la correspondencia de old a new está ya
-     * implementada y podré obtener que 2x -> 4x; (2) mirando en old, (?-1) me lleva de 2x a 1; (3) mirando la
-     * coorespondencia, 1 -> 2; finalmente, 2 - 4x = -2, o sea (?-1) => (?-2)
      */
-    public function test_lexical_relative_numbered_backreferences_supported() {
-        $r = Ando_Regex::def('$a (sens|respons)e $b (?-1)ibility', null)
-                       ->interpolate(array('a' => '(aa)', 'b' => '(bb)'));
-        $this->assertEquals('(aa) (sens|respons)e (bb) (?-2)ibility', $r->expression());
+    public function test_lexical_relative_backreferences_supported() {
+        /**
+         * before: '$a (xx) $b ((?-2)yy) (cc) $d (?-1) (ee)'
+         * after:  '(aa) (xx) (bb) ((?-3)yy) (cc) (dd)(dd) (?-3) (ee)'
+         *
+         * Positions of capturing groups: (before and after interpolation)
+         *   before  ->  after
+         *     A  1      2  E
+         *        2      4
+         *     B  3      5  F
+         *        4      8
+         *
+         * Positions of relative backreferences: (before and after interpolation)
+         *   before  ->  after
+         *     C  3      5  G
+         *     D  4      8  H
+         *
+         *   A - C == 1 - 3 == -2 => (?-2)
+         *   B - D == 3 - 4 == -1 => (?-1)
+         *
+         *   E - G == 2 - 5 == -3 => (?-3)
+         *   F - H == 5 - 8 == -3 => (?-3)
+         */
+        $r = Ando_Regex::def('$a (xx) $b ((?-2)yy) (cc) $d (?-1) (ee)', null)
+                       ->interpolate(array('a' => '(aa)', 'b' => '(bb)', 'd' => '(dd)(dd)'));
+        $this->assertEquals('(aa) (xx) (bb) ((?-3)yy) (cc) (dd)(dd) (?-3) (ee)', $r->expression());
 
-        // Notice that there is no need to test for lexical_relative_numbered_backreferences into variable values
+        // Notice that there is no need to test for lexical_relative_backreferences into variable values
         // because, even if some variable value contains some relative reference, under the hypothesis that each value
         // must be well formed, that implies that such a value can only refer to groups captured by that same value,
         // thus each value is atomic, and even if the value contains variables in the middle (as shown for the above
@@ -567,5 +574,12 @@ class Ando_RegexTest
         // replace variables in the template, then the above test covers also this case (after the replacement takes
         // place, the variable value containing a relative reference with a variable in the middle becomes part ot the
         // new template).
+    }
+
+    public function test_count_matches_allows_to_count_broken_expressions() {
+        // Notice that the following expression is broken at the last character.
+        $count = Ando_Regex::count_matches('$a (sens|respons)e $b (');
+        // In this case count_matches is supposed to count that final parenthesis as a capturing group.
+        $this->assertEquals(2, $count['numbered']);
     }
 }

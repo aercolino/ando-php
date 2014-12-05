@@ -508,6 +508,7 @@ class Ando_Regex
             'numbered'         => array('find' => '@\\\\(\d{1,2})@', 'replace' => '\\%s'),
             'lexical_numbered' => array('find' => '@\(\?(\d{1,2})\)@', 'replace' => '(?%s)'),
             'lexical_relative' => array('find' => '@\(\?-(\d{1,2})\)@', 'replace' => '(?-%s)'),
+            'existential'      => array('find' => '@\(\?\((\d{1,2})\)@', 'replace' => '(?(%s)'),
     );
 
     /**
@@ -564,7 +565,7 @@ class Ando_Regex
     protected
     function fix_backreferences( array $pieces )
     {
-        $backreference_types = array('numbered', 'lexical_numbered');
+        $backreference_types = array('numbered', 'lexical_numbered', 'existential');
         $result = array($pieces[0]);
         $count = self::count_matches($pieces[0]);
         $this->tmp_before_count = $count['numbered'];

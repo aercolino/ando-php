@@ -535,12 +535,14 @@ class Ando_RegexTest
     function test_lexical_named_backreferences_supported()
     {
         // These tests only confirm that lexical_named_backreferences are ignored when counting groups.
-
         // palindromes: http://www.regular-expressions.info/recursecapture.html
+
+        // (?&word)
         $r = Ando_Regex::def('(\b(?<word>(?<letter>[a-z])(?&word)\g{letter}|[a-z])\b)|$cc', null)
                        ->interpolate(array('cc' => '(cc)\1'));
         $this->assertEquals('(\b(?<word>(?<letter>[a-z])(?&word)\g{letter}|[a-z])\b)|(cc)\4', $r->expression());
 
+        // (?P>word)
         $r = Ando_Regex::def('(\b(?<word>(?<letter>[a-z])(?P>word)\g{letter}|[a-z])\b)|$cc', null)
                        ->interpolate(array('cc' => '(cc)\1'));
         $this->assertEquals('(\b(?<word>(?<letter>[a-z])(?P>word)\g{letter}|[a-z])\b)|(cc)\4', $r->expression());
@@ -573,5 +575,21 @@ class Ando_RegexTest
         $count = Ando_Regex::count_matches('$a (sens|respons)e $b (');
         // In this case count_matches is supposed to count that final parenthesis as a capturing group.
         $this->assertEquals(2, $count['numbered']);
+    }
+
+    /**
+     * Issue #10
+     */
+    public
+    function test_existential_backreferences_supported()
+    {
+        //( \( )?    [^()]+    (?(1) \) )
+        $r = Ando_Regex::def('$a (\()?[^()]+(?(1)\))', null)
+                       ->interpolate(array('a' => '(aa)'));
+        $this->assertEquals('(aa) (\()?[^()]+(?(2)\))', $r->expression());
+
+        $r = Ando_Regex::def('(aa) $b', null)
+                       ->interpolate(array('b' => '(\()?[^()]+(?(1)\))'));
+        $this->assertEquals('(aa) (\()?[^()]+(?(2)\))', $r->expression());
     }
 }

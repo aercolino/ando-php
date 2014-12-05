@@ -374,20 +374,15 @@ class Ando_RegexTest
         $this->assertEquals('aa\$bb3', $r->expression());
     }
 
-    public
-    function test_interpolate_adjusts_current_backreferences()
-    {
-        $r = Ando_Regex::def('(aa)$b(cc)\1', null)
-                       ->interpolate(array('b' => '(bb)\1'));
-        $this->assertEquals('(aa)(bb)\2(cc)\1', $r->expression());
-    }
-
     /**
      * Issue #13
      */
     public
-    function test_interpolate_adjusts_remaining_backreferences()
-    {
+    function test_numbered_backreferences_supported() {
+        $r = Ando_Regex::def('(aa)$b(cc)\1', null)
+                       ->interpolate(array('b' => '(bb)\1'));
+        $this->assertEquals('(aa)(bb)\2(cc)\1', $r->expression());
+
         $r = Ando_Regex::def('(aa)$b(cc)\1\2', null)
                        ->interpolate(array('b' => '(bb)'));
         $this->assertEquals('(aa)(bb)(cc)\1\3', $r->expression());

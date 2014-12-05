@@ -614,8 +614,6 @@ class Ando_Regex
     /**
      * Fix a single backreference into (a non variable part of) the template.
      *
-     * WARNING: It only supports backreferences of the form <code>\1 .. \99</code>
-     *
      * @param array $matches
      *
      * @return string
@@ -633,8 +631,6 @@ class Ando_Regex
     /**
      * Fix a single backreference into a variable value.
      *
-     * WARNING: It only supports backreferences of the form <code>\1 .. \99</code>
-     *
      * @param array $matches
      *
      * @return string
@@ -651,8 +647,6 @@ class Ando_Regex
 
     /**
      * Fix a single backreference into (a non variable part of) the template.
-     *
-     * WARNING: It only supports backreferences of the form <code>\1 .. \99</code>
      *
      * @param array $matches
      *

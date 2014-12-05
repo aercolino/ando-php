@@ -678,16 +678,16 @@ class Ando_Regex
          *   F - H == 5 - 8 == -3 => (?-3)
          */
         static $i = 0;
-                                                                                       // -2 -> -3:       -1 -> -3:
-        $relative_jumps_before = (int) $matches[1];                                    //   2 = C - A       1 = D - B
-        $reference_position_before = $this->tmp_rel_references['before'][$i];          //   3 = C           4 = D
-        $group_position_before = $reference_position_before - $relative_jumps_before;  //   1 = A           3 = B
-        $group_position_after = $this->tmp_new_references[$group_position_before];     //   2 = E           5 = F
-        $reference_position_after = $this->tmp_rel_references['after'][$i];            //   5 = G           8 = H
-        $relative_jumps_after = $reference_position_after - $group_position_after;     //   3 = G - E       3 = H - F
+                                                                               // -2 -> -3:       -1 -> -3:
+        $jumps_before         = (int) $matches[1];                             //   2 = C - A       1 = D - B
+        $reference_pos_before = $this->tmp_rel_references['before'][$i];       //   3 = C           4 = D
+        $group_pos_before     = $reference_pos_before - $jumps_before;         //   1 = A           3 = B
+        $group_pos_after      = $this->tmp_new_references[$group_pos_before];  //   2 = E           5 = F
+        $reference_pos_after  = $this->tmp_rel_references['after'][$i];        //   5 = G           8 = H
+        $jumps_after          = $reference_pos_after - $group_pos_after;       //   3 = G - E       3 = H - F
 
         $pattern = self::$backreference_types['lexical_relative']['replace'];
-        $result = sprintf($pattern, $relative_jumps_after);
+        $result = sprintf($pattern, $jumps_after);
 
         $i++;
         return $result;

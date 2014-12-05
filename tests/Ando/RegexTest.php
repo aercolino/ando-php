@@ -587,4 +587,34 @@ class Ando_RegexTest
                        ->interpolate(array('b' => '(\()?[^()]+(?(1)\))'));
         $this->assertEquals('(aa) (\()?[^()]+(?(2)\))', $r->expression());
     }
+
+    /**
+     * Issue #4, g-numbered-1
+     */
+    public
+    function test_g_numbered_1_backreferences_supported() {
+        $r = Ando_Regex::def('(aa)$b(cc)\g1', null)
+                       ->interpolate(array('b' => '(bb)\g1'));
+        $this->assertEquals('(aa)(bb)\g2(cc)\g1', $r->expression());
+
+        $r = Ando_Regex::def('(aa)$b(cc)\g1\g2', null)
+                       ->interpolate(array('b' => '(bb)'));
+        $this->assertEquals('(aa)(bb)(cc)\g1\g3', $r->expression());
+
+    }
+
+    /**
+     * Issue #4, g-numbered-2
+     */
+    public
+    function test_g_numbered_2_backreferences_supported() {
+        $r = Ando_Regex::def('(aa)$b(cc)\g{1}', null)
+                       ->interpolate(array('b' => '(bb)\g{1}'));
+        $this->assertEquals('(aa)(bb)\g{2}(cc)\g{1}', $r->expression());
+
+        $r = Ando_Regex::def('(aa)$b(cc)\g{1}\g{2}', null)
+                       ->interpolate(array('b' => '(bb)'));
+        $this->assertEquals('(aa)(bb)(cc)\g{1}\g{3}', $r->expression());
+
+    }
 }

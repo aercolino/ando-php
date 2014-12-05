@@ -589,7 +589,7 @@ class Ando_RegexTest
     }
 
     /**
-     * Issue #4, g-numbered-1
+     * Issue #4, g_numbered_1
      */
     public
     function test_g_numbered_1_backreferences_supported() {
@@ -600,11 +600,10 @@ class Ando_RegexTest
         $r = Ando_Regex::def('(aa)$b(cc)\g1\g2', null)
                        ->interpolate(array('b' => '(bb)'));
         $this->assertEquals('(aa)(bb)(cc)\g1\g3', $r->expression());
-
     }
 
     /**
-     * Issue #4, g-numbered-2
+     * Issue #4, g_numbered_2
      */
     public
     function test_g_numbered_2_backreferences_supported() {
@@ -615,6 +614,45 @@ class Ando_RegexTest
         $r = Ando_Regex::def('(aa)$b(cc)\g{1}\g{2}', null)
                        ->interpolate(array('b' => '(bb)'));
         $this->assertEquals('(aa)(bb)(cc)\g{1}\g{3}', $r->expression());
+    }
 
+    /**
+     * Issue #4, g_relative_1
+     */
+    public
+    function test_g_relative_1_backreferences_supported()
+    {
+        $r = Ando_Regex::def('$a (xx) $b (\g-2yy) (cc) $d \g-1 (ee)', null)
+                       ->interpolate(array('a' => '(aa)', 'b' => '(bb)', 'd' => '(dd)(dd)'));
+        $this->assertEquals('(aa) (xx) (bb) (\g-3yy) (cc) (dd)(dd) \g-3 (ee)', $r->expression());
+
+        // Notice that there is no need to test for g_relative_1_backreferences into variable values
+        // because, even if some variable value contains some relative reference, under the hypothesis that each value
+        // must be well formed, that implies that such a value can only refer to groups captured by that same value,
+        // thus each value is atomic, and even if the value contains variables in the middle (as shown for the above
+        // template), given that we do not ever replace variables appearing in values of variables but always and only
+        // replace variables in the template, then the above test covers also this case (after the replacement takes
+        // place, the variable value containing a relative reference with a variable in the middle becomes part ot the
+        // new template).
+    }
+
+    /**
+     * Issue #4, g_relative_2
+     */
+    public
+    function test_g_relative_2_backreferences_supported()
+    {
+        $r = Ando_Regex::def('$a (xx) $b (\g{-2}yy) (cc) $d \g{-1} (ee)', null)
+                       ->interpolate(array('a' => '(aa)', 'b' => '(bb)', 'd' => '(dd)(dd)'));
+        $this->assertEquals('(aa) (xx) (bb) (\g{-3}yy) (cc) (dd)(dd) \g{-3} (ee)', $r->expression());
+
+        // Notice that there is no need to test for g_relative_2_backreferences into variable values
+        // because, even if some variable value contains some relative reference, under the hypothesis that each value
+        // must be well formed, that implies that such a value can only refer to groups captured by that same value,
+        // thus each value is atomic, and even if the value contains variables in the middle (as shown for the above
+        // template), given that we do not ever replace variables appearing in values of variables but always and only
+        // replace variables in the template, then the above test covers also this case (after the replacement takes
+        // place, the variable value containing a relative reference with a variable in the middle becomes part ot the
+        // new template).
     }
 }

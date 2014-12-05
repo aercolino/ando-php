@@ -485,16 +485,21 @@ class Ando_Regex
     protected
     function make_rel_references( $subject )
     {
+        $backreference_types = array('lexical_relative', 'g_relative_1', 'g_relative_2');
         $result = array();
-        $pieces = preg_split(self::$backreference_types['lexical_relative']['find'], $subject);
-        if ( 1 == count($pieces) ) {
-            return $result;
-        }
-        $before_count = 0;
-        for ($i = 0, $i_top = count($pieces); $i < $i_top; $i++) {
-            $count = self::count_matches($pieces[$i]);
-            $before_count += $count['numbered'];
-            $result[] = $before_count + 1;
+        foreach ($backreference_types as $type) {
+            $this->tmp_backreference_type = $type;
+            $pieces = preg_split(self::$backreference_types[$this->tmp_backreference_type]['find'], $subject);
+            if ( 1 == count($pieces) ) {
+                $result[$this->tmp_backreference_type] = array();
+                continue;
+            }
+            $before_count = 0;
+            for ($i = 0, $i_top = count($pieces); $i < $i_top; $i++) {
+                $count = self::count_matches($pieces[$i]);
+                $before_count += $count['numbered'];
+                $result[$this->tmp_backreference_type][] = $before_count + 1;
+            }
         }
         return $result;
     }
@@ -504,14 +509,16 @@ class Ando_Regex
      *
      * @var array
      */
-    static protected $backreference_types = array(
-            'numbered'         => array('find' => '@\\\\(\d{1,2})@', 'replace' => '\\%s'),
-            'lexical_numbered' => array('find' => '@\(\?(\d{1,2})\)@', 'replace' => '(?%s)'),
-            'lexical_relative' => array('find' => '@\(\?-(\d{1,2})\)@', 'replace' => '(?-%s)'),
-            'existential'      => array('find' => '@\(\?\((\d{1,2})\)@', 'replace' => '(?(%s)'),
-            'g-numbered-1'     => array('find' => '@\\\\g(\d{1,2})@', 'replace' => '\\g%s'),
-            'g-numbered-2'     => array('find' => '@\\\\g\{(\d{1,2})\}@', 'replace' => '\\g{%s}'),
-    );
+    static protected $backreference_types = array(                                                      //@formatter:off
+            'numbered'         => array('find' => '@\\\\(\d{1,2})@',       'replace' => '\\%s'),
+            'lexical_numbered' => array('find' => '@\(\?(\d{1,2})\)@',     'replace' => '(?%s)'),
+            'lexical_relative' => array('find' => '@\(\?-(\d{1,2})\)@',    'replace' => '(?-%s)'),
+            'existential'      => array('find' => '@\(\?\((\d{1,2})\)@',   'replace' => '(?(%s)'),
+            'g_numbered_1'     => array('find' => '@\\\\g(\d{1,2})@',      'replace' => '\\g%s'),
+            'g_numbered_2'     => array('find' => '@\\\\g\{(\d{1,2})\}@',  'replace' => '\\g{%s}'),
+            'g_relative_1'     => array('find' => '@\\\\g-(\d{1,2})@',     'replace' => '\\g-%s'),
+            'g_relative_2'     => array('find' => '@\\\\g\{-(\d{1,2})\}@', 'replace' => '\\g{-%s}'),
+    );                                                                                                  //@formatter:on
 
     /**
      * Interpolate variables into the template, taking care of backreferences.
@@ -546,9 +553,7 @@ class Ando_Regex
         $this->expression = implode('', $pieces);
 
         $this->tmp_rel_references['after'] = $this->make_rel_references($this->expression);
-        $this->expression = preg_replace_callback(self::$backreference_types['lexical_relative']['find'],
-                                                  array($this, 'fix_lexical_relative_backreference'),
-                                                  $this->expression);
+        $this->expression = $this->fix_relative_backreferences($this->expression);
 
         if ( preg_match($find_unescaped_variables, $this->expression) ) {
             $this->template = $this->expression;
@@ -567,7 +572,7 @@ class Ando_Regex
     protected
     function fix_backreferences( array $pieces )
     {
-        $backreference_types = array('numbered', 'lexical_numbered', 'existential', 'g-numbered-1', 'g-numbered-2');
+        $backreference_types = array('numbered', 'lexical_numbered', 'existential', 'g_numbered_1', 'g_numbered_2');
         $result = array($pieces[0]);
         $count = self::count_matches($pieces[0]);
         $this->tmp_before_count = $count['numbered'];
@@ -649,6 +654,27 @@ class Ando_Regex
     }
 
     /**
+     * Fix all relative backreferences into the subject.
+     *
+     * @param string $subject
+     *
+     * @return string
+     */
+    protected
+    function fix_relative_backreferences( $subject )
+    {
+        $backreference_types = array('lexical_relative', 'g_relative_1', 'g_relative_2');
+        $result = $subject;
+        foreach ($backreference_types as $type) {
+            $this->tmp_backreference_type = $type;
+            $result = preg_replace_callback(self::$backreference_types[$type]['find'],
+                                            array($this, 'fix_relative_backreference'),
+                                            $result);
+        }
+        return $result;
+    }
+
+    /**
      * Fix a single backreference into (a non variable part of) the template.
      *
      * @param array $matches
@@ -656,7 +682,7 @@ class Ando_Regex
      * @return string
      */
     protected
-    function fix_lexical_relative_backreference( array $matches )
+    function fix_relative_backreference( array $matches )
     {
         /**
          * before: '$a (xx) $b ((?-2)yy) (cc) $d (?-1) (ee)'
@@ -680,19 +706,27 @@ class Ando_Regex
          *   E - G == 2 - 5 == -3 => (?-3)
          *   F - H == 5 - 8 == -3 => (?-3)
          */
-        static $i = 0;
-                                                                               // -2 -> -3:       -1 -> -3:
-        $jumps_before         = (int) $matches[1];                             //   2 = C - A       1 = D - B
-        $reference_pos_before = $this->tmp_rel_references['before'][$i];       //   3 = C           4 = D
-        $group_pos_before     = $reference_pos_before - $jumps_before;         //   1 = A           3 = B
-        $group_pos_after      = $this->tmp_new_references[$group_pos_before];  //   2 = E           5 = F
-        $reference_pos_after  = $this->tmp_rel_references['after'][$i];        //   5 = G           8 = H
-        $jumps_after          = $reference_pos_after - $group_pos_after;       //   3 = G - E       3 = H - F
+        $rel_references_before = $this->tmp_rel_references['before'][$this->tmp_backreference_type];
+        $rel_references_after  = $this->tmp_rel_references['after'][$this->tmp_backreference_type];
+        // We define $i as static so that it iterates over each piece got by splitting.
+        $i_top = count($rel_references_before) - 1;  // But we discard the last piece.
+        static $i = 0;                                                                                  //@formatter:off
+                                                                             // -2 -> -3:       -1 -> -3:
+        $jumps_before         = (int) $matches[1];                             // 2 = C - A       1 = D - B
+        $reference_pos_before = $rel_references_before[$i];                    // 3 = C           4 = D
+        $group_pos_before     = $reference_pos_before - $jumps_before;         // 1 = A           3 = B
+        $group_pos_after      = $this->tmp_new_references[$group_pos_before];  // 2 = E           5 = F
+        $reference_pos_after  = $rel_references_after[$i];                     // 5 = G           8 = H
+        $jumps_after          = $reference_pos_after - $group_pos_after;       // 3 = G - E       3 = H - F
+                                                                                                        //@formatter:on
 
-        $pattern = self::$backreference_types['lexical_relative']['replace'];
+        $pattern = self::$backreference_types[$this->tmp_backreference_type]['replace'];
         $result = sprintf($pattern, $jumps_after);
 
         $i++;
+        if ($i == $i_top) {  // Notice that we must re-initialize $i after reaching $i_top because it is static.
+            $i = 0;
+        }
         return $result;
     }
 

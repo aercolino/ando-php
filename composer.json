@@ -18,6 +18,8 @@
         "phpunit/dbunit": ">=1.2"
     },
     "autoload": {
-        "psr-0": { "Ando_": "src/" }
+        "psr-0": {
+            "": "src/"
+        }
     }
 }

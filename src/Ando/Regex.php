@@ -745,7 +745,7 @@ class Ando_Regex
      * @return null|string|array
      */
     static public
-    function replace( $pattern, $callback, $subject, $limit = -1, &$count = 0 )
+    function replace_callback( $pattern, $callback, $subject, $limit = -1, &$count = 0 )
     {
 
         $limit = min(array(-1, $limit));
@@ -758,7 +758,7 @@ class Ando_Regex
 
         if ( is_array($subject) ) {
             foreach ($subject as &$subSubject) {
-                $subSubject = self::replace($pattern, $callback, $subSubject, $limit, $subCount);
+                $subSubject = self::replace_callback($pattern, $callback, $subSubject, $limit, $subCount);
                 $count += $subCount;
             }
             return $subject;
@@ -766,7 +766,7 @@ class Ando_Regex
 
         if ( is_array($pattern) ) {
             foreach ($pattern as $subPattern) {
-                $subject = self::replace($subPattern, $callback, $subject, $limit, $subCount);
+                $subject = self::replace_callback($subPattern, $callback, $subject, $limit, $subCount);
                 $count += $subCount;
             }
             return $subject;

@@ -292,8 +292,8 @@ class Ando_Html_Parser
                 'value' => '\s*"([^"]+)"',
             )
         );
-        // use Ando_Regex::replace to scan $source
-        Ando_Regex::replace($regex, Ando_StarFunc::def(array($this, 'attribute_add'), array(
+        // use Ando_Regex::replace_callback to scan $source
+        Ando_Regex::replace_callback($regex, Ando_StarFunc::def(array($this, 'attribute_add'), array(
             'extra' => array($result),
         )), $source);
         return $result;

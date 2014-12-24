@@ -119,8 +119,8 @@ class Ando_Html_Lexer
                 'text' => '(?:(?!<!--|<!doctype\b|<\w|</\w).)+'
             )
         );
-        // use Ando_Regex::replace to scan $this->html
-        Ando_Regex::replace($regex, array(
+        // use Ando_Regex::replace_callback to scan $this->html
+        Ando_Regex::replace_callback($regex, array(
             $this,
             'tokens_add'
         ), $this->html);

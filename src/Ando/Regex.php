@@ -40,7 +40,7 @@ class Ando_Regex
     const PCRE_STUDY_EXTRA_NEEDED_MODIFIER = 'S';
     const PCRE_UNGREEDY_MODIFIER = 'U'; // can be local
     const PCRE_EXTRA_MODIFIER = 'X'; // can be local
-    const PCRE_INFO_JCHANGED_MODIFIER = 'J'; // must be local !!
+    const PCRE_INFO_JCHANGED_MODIFIER = 'J'; // must be local !! --> https://bugs.php.net/bug.php?id=47456
     const PCRE_UTF8_MODIFIER = 'u';
 
     const PREG_REPLACE_EVAL_MODIFIER = 'e'; // deprecated as of PHP 5.5, only works in preg_replace patterns
@@ -121,7 +121,7 @@ class Ando_Regex
      * @return string
      */
     static public
-    function option_same_name_groups_ok()
+    function option_same_name()
     {
         $result = '(?' . self::PCRE_INFO_JCHANGED_MODIFIER . ')';
         return $result;
@@ -425,7 +425,7 @@ class Ando_Regex
         $delimited = $same_delimited . '|' . implode('|', $pair_delimited);
 
         $no_esc = preg_replace('@\\.@', '', $result); // remove escaped characters to simplify matches
-        if ( preg_match('@' . self::option_same_name_groups_ok() . '^(?:' . $delimited . ')' . '(?<modifiers>' .
+        if ( preg_match('@' . self::option_same_name() . '^(?:' . $delimited . ')' . '(?<modifiers>' .
                         self::pattern_global_modifiers() . ')$@', $no_esc, $matches) ) {
             // due to matching against $no_esc, we can't just take $matches['expression'];
             $result = substr($expression, 1, -1 - strlen($matches['modifiers']));

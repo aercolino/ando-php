@@ -655,4 +655,11 @@ class Ando_RegexTest
         // place, the variable value containing a relative reference with a variable in the middle becomes part ot the
         // new template).
     }
+
+    /**
+     * @expectedException Ando_Exception
+     */
+    public function test_unknown_modifier_J() {
+        Ando_Regex::def('', '@@J');
+    }
 }

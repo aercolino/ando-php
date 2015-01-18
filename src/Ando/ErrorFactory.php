@@ -220,20 +220,6 @@ class Ando_ErrorFactory
             ->E_NOTICE_by_using_an_undefined_constant();
     }
 
-    /**
-     * -- "Couldn't find implementation for method %s%s%s"
-     * -- "Couldn't execute method %s%s%s"
-     * -- "Class %s must implement interface %s as part of either %s or %s"   (<-- traversable)
-     * -- "Internal zval's can't be arrays, objects or resources"
-     * -- "Cannot call default session handler"
-     * -- "%s::%s() must be derived from %s::%s"
-     * -- "Unable to start %s module"
-     * -- "Property %s of class %s cannot be updated"
-     * -- "Property %s of class %s cannot be read"
-     * -- "Cannot use both zlib.output_compression and output_handler together!!"
-     * -- "Class %s could not implement interface %s"
-     * -- "magic_quotes_runtime is not supported anymore"
-     */
     public static
     function E_CORE_ERROR()
     {
@@ -242,28 +228,21 @@ class Ando_ErrorFactory
     }
 
     /**
-     * -- "zend_signal: shutdown with non-zero blocking depth (%d)"
-     * -- "zend_signal: handler was replaced for signal (%d) after startup"
-     * -- "Cannot open '%s' for reading"
-     * -- "Cannot load module '%s' because required module '%s' is not loaded"
-     * -- "Unable to load dynamic library '%s' - %s"
-     * -- "Invalid library (appears to be a Zend Extension, try loading using zend_extension=%s from php.ini)"
-     * -- "Invalid library (maybe not a PHP library) '%s'"
-     * -- "%s: Unable to initialize module\n"
-     *    "Module compiled with module API=%d\n"
-     *    "PHP    compiled with module API=%d\n"
-     *    "These options need to match\n"
-     * -- "%s: Unable to initialize module\n"
-     *    "Module compiled with build ID=%s\n"
-     *    "PHP    compiled with build ID=%s\n"
-     *    "These options need to match\n"
-     * -- "Unable to initialize module '%s'"
+     * By looking at the PHP source files, I discovered that, unlike E_CORE_ERROR, E_CORE_WARNING is triggered only
+     * during low level operations, like loading modules during startup, or handling deactivation of signal handlers
+     * during shutdown (5.4+). Given that there is no way to interfere with startup from userland, and given that,
+     * as much as I can currently understand from the sources, there is neither a way to do it during shutdown because
+     * userland shutdown handlers get executed before zend_signal_deactivate, I'm giving up on this, for now.
+     *
+     * @link http://lxr.php.net/s?refs=zend_signal_deactivate&project=PHP_5_4
+     *
+     * For the above reasons this method is not public.
      */
-    private static
+    protected static
     function E_CORE_WARNING()
     {
         self::instance()
-            ->help_me_find_a_way_to_trigger_E_CORE_WARNING_please();
+            ->no_way_to_trigger_E_CORE_WARNING_from_userland_yet();
     }
 
     public static
@@ -273,12 +252,6 @@ class Ando_ErrorFactory
             ->E_COMPILE_ERROR_by_declaring_a_class_called_self();
     }
 
-    /**
-     * -- "Unexpected character in input:  '%c' (ASCII=%d) state=%d"
-     * -- "Unterminated comment starting line %d"
-     * -- "Unsupported encoding [%s]"
-     * -- "declare(encoding=...) ignored because Zend multibyte feature is turned off by settings"
-     */
     public static
     function E_COMPILE_WARNING()
     {
@@ -307,22 +280,6 @@ class Ando_ErrorFactory
             ->E_USER_NOTICE_by_calling_trigger_error_with_type_e_user_notice();
     }
 
-    /**
-     * -- "Accessing static property %s::$%s as non static"
-     * -- "Only variables should be assigned by reference"
-     * -- "Non-static method %s::%s() should not be called statically%s"
-     * -- "Only basic entities substitution is supported for multi-byte encodings other than UTF-8; "
-     * -- "There is no next result set. Please, call mysqli_more_results()/mysqli::more_results() to check whether to
-     *    call this function/method"
-     * -- "Resource ID#" ZEND_LONG_FMT " used as offset, casting to integer (%pd)"
-     * -- "Static function %s::%s() should not be abstract"
-     * -- "Redefining already defined constructor for class %s"
-     * -- "You should be using the time() function instead"
-     * -- "%s%s%s() expects parameter %d %s"
-     * -- "%s%s%s() expects parameter %d to be %s, %s given"
-     * -- "non-static method %s::%s() should not be called statically, assuming $this from compatible context %s"
-     * -- "non-static method %s::%s() should not be called statically"
-     */
     public static
     function E_STRICT()
     {
@@ -420,9 +377,9 @@ class Ando_ErrorFactory
     protected
     function __construct()
     {
-        $this->all_errors_mask = $this->get_all_errors_mask();
-        $this->shutdown_errors_mask = $this->get_shutdown_errors_mask();
-        $this->non_shutdown_errors_mask = $this->all_errors_mask & ~ $this->shutdown_errors_mask;
+        $this->all_errors_mask          = $this->get_all_errors_mask();
+        $this->shutdown_errors_mask     = $this->get_shutdown_errors_mask();
+        $this->non_shutdown_errors_mask = $this->all_errors_mask & ~$this->shutdown_errors_mask;
     }
 
     protected
@@ -487,17 +444,14 @@ class Ando_ErrorFactory
         eval($code);
     }
 
-    /**
-     * This method does not trigger an error!
-     * Please, help me find a way to trigger E_CORE_WARNING.
-     * @email aercolino@yahoo.com
-     */
-    public
-    function help_me_find_a_way_to_trigger_E_CORE_WARNING_please()
+    private
+    function no_way_to_trigger_E_CORE_WARNING_from_userland_yet()
     {
-        // TODO find a way to trigger an E_CORE_WARNING
+        // TODO find a way to trigger E_CORE_WARNING from userland
+
         // You can play with this code if you like, but it doesn't really work.
         // In fact, it only works inside the CLI created by exec "php...".
+
         $filename = tempnam(sys_get_temp_dir(), 'no_extension_ini_');
         file_put_contents($filename, 'extension=no_extension');
         $code = "php -c $filename xxx";

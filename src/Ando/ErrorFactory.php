@@ -351,7 +351,7 @@ class Ando_ErrorFactory
     /**
      * Convert a set of errors to a mask of bits.
      *
-     * @param int[] $errors
+     * @param int|int[] $errors
      *
      * @return int
      */
@@ -434,7 +434,7 @@ class Ando_ErrorFactory
     /**
      * Visualizer for catchable errors. To be pushed onto the error handlers stack (conceptually).
      *
-     * @param int    $level
+     * @param int    $type
      * @param string $message
      * @param string $file
      * @param int    $line
@@ -443,16 +443,10 @@ class Ando_ErrorFactory
      * @return bool
      */
     public static
-    function catchable_error_visualizer( $level, $message, $file, $line, $context )
+    function catchable_error_visualizer( $type, $message, $file, $line, $context )
     {
-        $error = array(
-                'type'    => $level,
-                'message' => $message,
-                'file'    => $file,
-                'line'    => $line,
-                'context' => $context,
-        );
-        self::see_error('Catchable error', $level, $error);
+        $error = compact('type', 'message', 'file', 'line', 'context');
+        self::see_error('Catchable error', $type, $error);
         debug_print_backtrace();
         return self::instance()->catchable_error_handled;
     }

@@ -1,13 +1,14 @@
 <?php
 /**
- * @link https://github.com/aercolino/ando-php
+ * @link      https://github.com/aercolino/ando-php
  * @copyright Copyright (c) 2015 Andrea Ercolino
- * @license https://github.com/aercolino/ando-php/blob/master/LICENSE
+ * @license   https://github.com/aercolino/ando-php/blob/master/LICENSE
  */
 
 //@Formatter:off
 /**
  * A simple reference copied from the PHP documentation.
+ *
  *     1    E_ERROR                Fatal run-time errors. Errors that cannot be recovered from. Execution of the script
  *                                 is halted.
  *     2    E_WARNING              Run-time warnings (non-fatal errors). Execution of the script is not halted.
@@ -46,11 +47,57 @@
  */
 class Ando_ErrorFactory
 {
-    // -----------------------------------------------------------------------------------------------START CLASS PUBLIC
+    // -----------------------------------------------------------------------------------------------INTERNAL SINGLETON
 
-    const NO_ERROR = null;
+    /**
+     * Map error names to error values.
+     *
+     * @var int[]
+     */
+    protected $map_to_int = array(
+            'E_ERROR'             => E_ERROR,
+            'E_WARNING'           => E_WARNING,
+            'E_PARSE'             => E_PARSE,
+            'E_NOTICE'            => E_NOTICE,
+            'E_CORE_ERROR'        => E_CORE_ERROR,
+            'E_CORE_WARNING'      => E_CORE_WARNING,
+            'E_COMPILE_ERROR'     => E_COMPILE_ERROR,
+            'E_COMPILE_WARNING'   => E_COMPILE_WARNING,
+            'E_USER_ERROR'        => E_USER_ERROR,
+            'E_USER_WARNING'      => E_USER_WARNING,
+            'E_USER_NOTICE'       => E_USER_NOTICE,
+            'E_STRICT'            => E_STRICT,
+            'E_RECOVERABLE_ERROR' => E_RECOVERABLE_ERROR,
+            'E_DEPRECATED'        => E_DEPRECATED,
+            'E_USER_DEPRECATED'   => E_USER_DEPRECATED,
+    );
 
-    public static
+    /**
+     * Map error values to error names.
+     *
+     * @var string[]
+     */
+    protected $map_to_str = array();
+
+    protected
+    function __construct()
+    {
+        $this->map_to_str = array_flip($this->map_to_int);
+    }
+
+    /**
+     * Internal singleton.
+     *
+     * @var Ando_ErrorFactory
+     */
+    protected static $instance;
+
+    /**
+     * Get the singleton.
+     *
+     * @return Ando_ErrorFactory
+     */
+    protected static
     function instance()
     {
         if ( is_null(self::$instance) ) {
@@ -59,33 +106,139 @@ class Ando_ErrorFactory
         return self::$instance;
     }
 
+    // ---------------------------------------------------------------------------------------------CATEGORIES OF ERRORS
+
+    /**
+     * All errors, as an array of integers.
+     *
+     * @return int[]
+     */
     public static
-    function to_str( $error )
+    function all_errors()
     {
-        return isset(self::$int2str[$error])
-                ? self::$int2str[$error]
-                : self::NO_ERROR;  // self::NO_ERROR == '', (string) self::NO_ERROR === ''
+        $result = array_values(self::instance()->map_to_int);
+        return $result;
     }
 
+    /**
+     * All errors, as an array of strings.
+     *
+     * @return string[]
+     */
     public static
-    function to_int( $error )
+    function all_errors_to_str()
     {
-        return isset(self::$str2int[$error])
-                ? self::$str2int[$error]
-                : self::NO_ERROR;  // self::NO_ERROR == 0, (int) self::NO_ERROR === 0
+        $result = array_keys(self::instance()->map_to_int);
+        return $result;
+    }
+
+    /**
+     * Non catchable errors can't be handled from an error handler, but they can be logged from a shutdown handler.
+     *
+     * @link https://github.com/php/php-src/blob/fc33f52d8c25997dd0711de3e07d0dc260a18c11/Zend/zend.c#L1078
+     *
+     * @return int[]
+     */
+    public static
+    function non_catchable_errors()
+    {
+        return array(
+                E_ERROR, E_PARSE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING
+        );
+    }
+
+    /**
+     * Catchable errors can be handled from an error handler.
+     *
+     * @return int[]
+     */
+    public static
+    function catchable_errors()
+    {
+        return array_diff(self::all_errors(), self::non_catchable_errors());
+    }
+
+    /**
+     * Shutdown errors cause PHP to shutdown the script.
+     *
+     * @return int[]
+     */
+    public static
+    function non_catchable_shutdown_errors()
+    {
+        return array(
+                E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR
+        );
+    }
+
+    /**
+     * Catchable shutdown errors cause PHP to shutdown the script but they can be handled from userland.
+     *
+     * @return int[]
+     */
+    public static
+    function catchable_shutdown_errors()
+    {
+        return array(
+                E_RECOVERABLE_ERROR, E_USER_ERROR
+        );
+    }
+
+    /**
+     * Shutdown errors cause PHP to shutdown the script.
+     *
+     * @return int[]
+     */
+    public static
+    function shutdown_errors()
+    {
+        return array_merge(self::non_catchable_shutdown_errors(), self::catchable_shutdown_errors());
+    }
+
+    /**
+     * Shutdown errors cause PHP to shutdown the script.
+     *
+     * @return int[]
+     */
+    public static
+    function non_shutdown_errors()
+    {
+        return array_diff(self::all_errors(), self::shutdown_errors());
+    }
+
+    /**
+     * Shutdown errors cause PHP to shutdown the script.
+     *
+     * @return int[]
+     */
+    public static
+    function catchable_non_shutdown_errors()
+    {
+        return array_intersect(self::catchable_errors(), self::non_shutdown_errors());
+    }
+
+    /**
+     * Catchable shutdown errors cause PHP to shutdown the script but they can be handled from userland.
+     *
+     * @return int[]
+     */
+    public static
+    function non_catchable_non_shutdown_errors()
+    {
+        return array_intersect(self::non_catchable_errors(), self::non_shutdown_errors());
     }
 
     /**
      * @link https://github.com/php/php-src/blob/fc33f52d8c25997dd0711de3e07d0dc260a18c11/main/main.c#L1083
      *
-     * @param $type
+     * @param $error
      *
      * @return string
      */
     public static
-    function error_type( $type )
+    function php_error_type( $error )
     {
-        switch ($type) {
+        switch ($error) {
             case E_ERROR:
             case E_CORE_ERROR:
             case E_COMPILE_ERROR:
@@ -122,47 +275,105 @@ class Ando_ErrorFactory
         return $result;
     }
 
-    public static
-    function all_errors_mask()
-    {
-        return self::instance()->all_errors_mask;
-    }
+    // ---------------------------------------------------------------------------------------------CONVERSION OF ERRORS
 
     /**
-     * @link https://github.com/php/php-src/blob/fc33f52d8c25997dd0711de3e07d0dc260a18c11/Zend/zend.c#L1078
-     *
-     * @return int
+     * Not an error.
      */
-    public static
-    function shutdown_errors_mask()
+    const NO_ERROR = 0;
+    const NO_ERROR_STR = 'NO_ERROR';
+
+    /**
+     * Unknown error.
+     */
+    const UNKNOWN_ERROR = -1;
+    const UNKNOWN_ERROR_STR = 'UNKNOWN_ERROR';
+
+    protected static
+    function convert( $errors, $map, $unknown )
     {
-        return self::instance()
-                   ->shutdown_errors_mask();
+        $was_array = true;
+        if ( ! is_array($errors) ) {
+            $was_array = false;
+            $errors    = array($errors);
+        }
+        $result = array();
+        foreach ($errors as $error) {
+            $result[] = isset($map[$error])
+                    ? $map[$error]
+                    : $unknown;
+        }
+        if ( ! $was_array ) {
+            list($result) = $result;
+        }
+        return $result;
     }
 
     public static
-    function non_shutdown_errors_mask()
+    function to_str( $errors )
     {
-        return self::instance()
-                   ->non_shutdown_errors_mask();
+        $result = self::convert($errors, self::instance()->map_to_str, self::UNKNOWN_ERROR_STR);
+        return $result;
     }
 
     public static
-    function register_shutdown_error_visualizer()
+    function to_int( $errors )
     {
-        register_shutdown_function(array('Ando_ErrorFactory', 'shutdown_error'));
+        $result = self::convert($errors, self::instance()->map_to_int, self::UNKNOWN_ERROR);
+        return $result;
     }
 
     public static
-    function register_non_shutdown_error_visualizer()
+    function to_mask( $errors )
     {
-        set_error_handler(array('Ando_ErrorFactory', 'non_shutdown_error'));
+        if ( ! is_array($errors) ) {
+            return (int) $errors;
+        }
+        $result = 0;
+        foreach ($errors as $error) {
+            $result = $result | (int) $error;
+        }
+        return $result;
     }
 
-    // -----------------------------------------------------------------------------------------------------------------
+    public static
+    function to_array( $mask )
+    {
+        $mask   = (int) $mask;
+        $result = array();
+        foreach (self::all_errors() as $error) {
+            if ( $error & $mask ) {
+                $result[] = $error;
+            }
+        }
+        return $result;
+    }
+
+    // ----------------------------------------------------------------------------QUICK AND DIRTY VISUALIZERS OF ERRORS
+
+    /**
+     * Show info about the error.
+     *
+     * @param $handler
+     * @param $level
+     * @param $error
+     */
+    protected static
+    function see_error( $handler, $level, $error )
+    {
+        $name = Ando_ErrorFactory::to_str($level);
+        if ( empty($name) ) {
+            $name = '(none)';
+        }
+        $type = Ando_ErrorFactory::php_error_type($level);
+        echo "\n$handler: $name ($type)\n";
+        if ( '(none)' != $name ) {
+            echo "\nerror = ", print_r($error, true), "\n";
+        }
+    }
 
     public static
-    function shutdown_error()
+    function non_catchable_error_visualizer()
     {
         static $count = 0;
         $count += 1;
@@ -174,12 +385,12 @@ class Ando_ErrorFactory
         $level = is_array($error) && isset($error['type']) && is_numeric($error['type'])
                 ? (int) $error['type']
                 : 0;
-        self::see_error(__FUNCTION__, $level, $error);
+        self::see_error('Non catchable error', $level, $error);
         // no backtrace available here...
     }
 
     public static
-    function non_shutdown_error( $level, $message, $file, $line, $context )
+    function catchable_error_visualizer( $level, $message, $file, $line, $context )
     {
         $error = array(
                 'type'    => $level,
@@ -188,14 +399,24 @@ class Ando_ErrorFactory
                 'line'    => $line,
                 'context' => $context,
         );
-        self::see_error(__FUNCTION__, $level, $error);
+        self::see_error('Catchable error', $level, $error);
         debug_print_backtrace();
         return true;  // True means no default error processing is needed.
     }
 
-    // -------------------------------------------------------------------------------------------------END CLASS PUBLIC
+    public static
+    function register_non_catchable_error_visualizer()
+    {
+        register_shutdown_function(array('Ando_ErrorFactory', 'non_catchable_error_visualizer'));
+    }
 
-    // --------------------------------------------------------------------------------------------START INSTANCE PUBLIC
+    public static
+    function register_catchable_error_visualizer()
+    {
+        set_error_handler(array('Ando_ErrorFactory', 'catchable_error_visualizer'));
+    }
+
+    // ------------------------------------------------------------------------------------------------FACTORY OF ERRORS
 
     public static
     function E_ERROR()
@@ -313,106 +534,7 @@ class Ando_ErrorFactory
             ->E_USER_DEPRECATED_by_calling_trigger_error_with_type_e_user_deprecated();
     }
 
-    // ----------------------------------------------------------------------------------------------END INSTANCE PUBLIC
-
-    // --------------------------------------------------------------------------------------------START CLASS PROTECTED
-
-    protected static $int2str = array(
-            0                   => '',
-            E_ERROR             => 'E_ERROR',
-            E_WARNING           => 'E_WARNING',
-            E_PARSE             => 'E_PARSE',
-            E_NOTICE            => 'E_NOTICE',
-            E_CORE_ERROR        => 'E_CORE_ERROR',
-            E_CORE_WARNING      => 'E_CORE_WARNING',
-            E_COMPILE_ERROR     => 'E_COMPILE_ERROR',
-            E_COMPILE_WARNING   => 'E_COMPILE_WARNING',
-            E_USER_ERROR        => 'E_USER_ERROR',
-            E_USER_WARNING      => 'E_USER_WARNING',
-            E_USER_NOTICE       => 'E_USER_NOTICE',
-            E_STRICT            => 'E_STRICT',
-            E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
-            E_DEPRECATED        => 'E_DEPRECATED',
-            E_USER_DEPRECATED   => 'E_USER_DEPRECATED',
-    );
-
-    protected static $str2int = array(
-            ''                    => 0,
-            'E_ERROR'             => E_ERROR,
-            'E_WARNING'           => E_WARNING,
-            'E_PARSE'             => E_PARSE,
-            'E_NOTICE'            => E_NOTICE,
-            'E_CORE_ERROR'        => E_CORE_ERROR,
-            'E_CORE_WARNING'      => E_CORE_WARNING,
-            'E_COMPILE_ERROR'     => E_COMPILE_ERROR,
-            'E_COMPILE_WARNING'   => E_COMPILE_WARNING,
-            'E_USER_ERROR'        => E_USER_ERROR,
-            'E_USER_WARNING'      => E_USER_WARNING,
-            'E_USER_NOTICE'       => E_USER_NOTICE,
-            'E_STRICT'            => E_STRICT,
-            'E_RECOVERABLE_ERROR' => E_RECOVERABLE_ERROR,
-            'E_DEPRECATED'        => E_DEPRECATED,
-            'E_USER_DEPRECATED'   => E_USER_DEPRECATED,
-    );
-
-    protected static
-    function see_error( $handler, $level, $error )
-    {
-        $name = Ando_ErrorFactory::to_str($level);
-        if ( empty($name) ) {
-            $name = '(none)';
-        }
-        $type = Ando_ErrorFactory::error_type($level);
-        echo "\n$handler: $name ($type)\n";
-        if ( '(none)' != $name ) {
-            echo "\nerror = ", print_r($error, true), "\n";
-        }
-    }
-
-    // ----------------------------------------------------------------------------------------------END CLASS PROTECTED
-
-    // -----------------------------------------------------------------------------------------START INSTANCE PROTECTED
-
-    protected static $instance;
-
-    protected $all_errors_mask;
-    protected $shutdown_errors_mask;
-    protected $non_shutdown_errors_mask;
-
-    protected
-    function __construct()
-    {
-        $this->all_errors_mask          = $this->get_all_errors_mask();
-        $this->shutdown_errors_mask     = $this->get_shutdown_errors_mask();
-        $this->non_shutdown_errors_mask = $this->all_errors_mask & ~$this->shutdown_errors_mask;
-    }
-
-    protected
-    function get_all_errors_mask()
-    {
-        $errors = array_values(self::$str2int);
-        $result = 0;
-        foreach ($errors as $error) {
-            $result = $result | $error;
-        }
-        return $result;
-    }
-
-    /**
-     * @link https://github.com/php/php-src/blob/fc33f52d8c25997dd0711de3e07d0dc260a18c11/Zend/zend.c#L1078
-     *
-     * @return int
-     */
-    protected
-    function get_shutdown_errors_mask()
-    {
-        $result = E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING;
-        return $result;
-    }
-
-    // -------------------------------------------------------------------------------------------END INSTANCE PROTECTED
-
-    //--------------------------------------------------------------------------------------------START INSTANCE PRIVATE
+    //---------------------------------------------------------------------------------------------------STORE OF ERRORS
 
     private
     function E_ERROR_by_calling_an_undefined_function()
@@ -527,6 +649,4 @@ class Ando_ErrorFactory
     {
         trigger_error('oops', E_USER_DEPRECATED);
     }
-
-    //----------------------------------------------------------------------------------------------END INSTANCE PRIVATE
 }

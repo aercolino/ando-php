@@ -133,7 +133,7 @@ class Ando_ErrorFactory
     }
 
     /**
-     * Non catchable errors can't be handled from an error handler, but they can be logged from a shutdown handler.
+     * Non catchable errors cannot be handled from an error handler.
      *
      * @link https://github.com/php/php-src/blob/fc33f52d8c25997dd0711de3e07d0dc260a18c11/Zend/zend.c#L1078
      *
@@ -159,7 +159,7 @@ class Ando_ErrorFactory
     }
 
     /**
-     * Shutdown errors cause PHP to shutdown the script.
+     * Non catchable shutdown errors cannot be handled from an error handler and jump to script shutdown.
      *
      * @return int[]
      */
@@ -172,7 +172,7 @@ class Ando_ErrorFactory
     }
 
     /**
-     * Catchable shutdown errors cause PHP to shutdown the script but they can be handled from userland.
+     * Catchable shutdown errors jump to script shutdown unless they are handled from an error handler.
      *
      * @return int[]
      */
@@ -185,7 +185,7 @@ class Ando_ErrorFactory
     }
 
     /**
-     * Shutdown errors cause PHP to shutdown the script.
+     * Shutdown errors jump to script shutdown.
      *
      * @return int[]
      */
@@ -196,7 +196,7 @@ class Ando_ErrorFactory
     }
 
     /**
-     * Shutdown errors cause PHP to shutdown the script.
+     * Non shutdown errors do not jump to script shutdown.
      *
      * @return int[]
      */
@@ -207,7 +207,7 @@ class Ando_ErrorFactory
     }
 
     /**
-     * Shutdown errors cause PHP to shutdown the script.
+     * Catchable non shutdown errors can be handled from an error handler and do not jump to script shutdown.
      *
      * @return int[]
      */
@@ -218,7 +218,7 @@ class Ando_ErrorFactory
     }
 
     /**
-     * Catchable shutdown errors cause PHP to shutdown the script but they can be handled from userland.
+     * Non catchable non shutdown errors cannot be handled from an error handler but do not jump to script shutdown.
      *
      * @return int[]
      */
@@ -229,6 +229,8 @@ class Ando_ErrorFactory
     }
 
     /**
+     * The type of the error according to PHP. It's kind of legacy...
+     *
      * @link https://github.com/php/php-src/blob/fc33f52d8c25997dd0711de3e07d0dc260a18c11/main/main.c#L1083
      *
      * @param $error
@@ -289,6 +291,15 @@ class Ando_ErrorFactory
     const UNKNOWN_ERROR = -1;
     const UNKNOWN_ERROR_STR = 'UNKNOWN_ERROR';
 
+    /**
+     * Convert errors from string (or int) to int (or string), using unknown for unmapped values.
+     *
+     * @param int|int[]|string|string[] $errors
+     * @param string[]|int[]            $map
+     * @param string|int                $unknown
+     *
+     * @return string[]|int[]
+     */
     protected static
     function convert( $errors, $map, $unknown )
     {
@@ -309,6 +320,13 @@ class Ando_ErrorFactory
         return $result;
     }
 
+    /**
+     * Convert errors from int to string.
+     *
+     * @param int|int[] $errors
+     *
+     * @return string[]
+     */
     public static
     function to_str( $errors )
     {
@@ -316,6 +334,13 @@ class Ando_ErrorFactory
         return $result;
     }
 
+    /**
+     * Convert errors from string to int.
+     *
+     * @param string|string[] $errors
+     *
+     * @return int[]
+     */
     public static
     function to_int( $errors )
     {
@@ -323,6 +348,13 @@ class Ando_ErrorFactory
         return $result;
     }
 
+    /**
+     * Convert a set of errors to a mask of bits.
+     *
+     * @param int[] $errors
+     *
+     * @return int
+     */
     public static
     function to_mask( $errors )
     {
@@ -336,6 +368,13 @@ class Ando_ErrorFactory
         return $result;
     }
 
+    /**
+     * Convert a mask of bits to a set of errors.
+     *
+     * @param int $mask
+     *
+     * @return int[]
+     */
     public static
     function to_array( $mask )
     {
@@ -361,23 +400,24 @@ class Ando_ErrorFactory
     protected static
     function see_error( $handler, $level, $error )
     {
-        $name = Ando_ErrorFactory::to_str($level);
-        if ( empty($name) ) {
-            $name = '(none)';
-        }
-        $type = Ando_ErrorFactory::php_error_type($level);
+        $name = $level == self::NO_ERROR
+                ? '(none)'
+                : self::to_str($level);
+        $type = self::php_error_type($level);
         echo "\n$handler: $name ($type)\n";
         if ( '(none)' != $name ) {
             echo "\nerror = ", print_r($error, true), "\n";
         }
     }
 
+    /**
+     * Visualizer for non catchable errors. To be appended to the shutdown handlers queue.
+     */
     public static
     function non_catchable_error_visualizer()
     {
         static $count = 0;
-        $count += 1;
-        if ( $count > 1 ) {
+        if ( ++$count > 1 ) {
             return;
         }
 
@@ -389,6 +429,19 @@ class Ando_ErrorFactory
         // no backtrace available here...
     }
 
+    protected $catchable_error_handled = true;  // True means no default error processing is needed.
+
+    /**
+     * Visualizer for catchable errors. To be pushed onto the error handlers stack (conceptually).
+     *
+     * @param int    $level
+     * @param string $message
+     * @param string $file
+     * @param int    $line
+     * @param array  $context
+     *
+     * @return bool
+     */
     public static
     function catchable_error_visualizer( $level, $message, $file, $line, $context )
     {
@@ -401,19 +454,44 @@ class Ando_ErrorFactory
         );
         self::see_error('Catchable error', $level, $error);
         debug_print_backtrace();
-        return true;  // True means no default error processing is needed.
+        return self::instance()->catchable_error_handled;
     }
 
+    /**
+     * Append the non catchable error visualizer to the shutdown handlers queue.
+     */
     public static
     function register_non_catchable_error_visualizer()
     {
+        /**
+         * Note that
+         *   - (1) register_shutdown_function appends the given function to a shutdown callbacks queue, so it must play
+         *     nicely with unknown code executed before and after, during the same shutdown;
+         *   - (2) it does not check whether the given function is already in the queue or not;
+         *   - (3) it's not possible to un-register a registered shutdown function.
+         * Therefore, a registered shutdown function, not only must play nicely with other unknown code, but also with
+         * possible additional executions of its own code. Tip: Use something like:
+         * <code>static $count = 0; if (++$count > 1) return; ...</code>
+         */
         register_shutdown_function(array('Ando_ErrorFactory', 'non_catchable_error_visualizer'));
     }
 
+    /**
+     * Push the catchable error visualizer onto the error handlers stack (conceptually).
+     *
+     * @param bool $handled
+     *
+     * @return mixed Previous handler.
+     */
     public static
-    function register_catchable_error_visualizer()
+    function register_catchable_error_visualizer( $handled = true )
     {
-        set_error_handler(array('Ando_ErrorFactory', 'catchable_error_visualizer'));
+        self::instance()->catchable_error_handled = (bool) $handled;
+
+        $result = set_error_handler(array(
+                'Ando_ErrorFactory', 'catchable_error_visualizer'
+        ));
+        return $result;
     }
 
     // ------------------------------------------------------------------------------------------------FACTORY OF ERRORS
@@ -536,38 +614,46 @@ class Ando_ErrorFactory
 
     //---------------------------------------------------------------------------------------------------STORE OF ERRORS
 
+
     private
     function E_ERROR_by_calling_an_undefined_function()
     {
-        $function = 'undefined_function_' . md5(time());
-        $function();
+        $name = uniqid('oops_');
+        $name();
     }
 
     private
     function E_WARNING_by_calling_a_function_with_less_arguments()
     {
-        $code = 'function oops($a){} oops();';
+        $name = uniqid('oops_');
+        $code = "
+            function $name(\$required){}
+            $name();
+        ";
         eval($code);
     }
 
     private
     function E_NOTICE_by_using_an_undefined_constant()
     {
-        $code = 'oops;';
+        $name = uniqid('oops_');
+        $code = "$name;";
         eval($code);
     }
 
     private
     function E_PARSE_by_not_using_a_semicolon()
     {
-        $code = "echo 'oops'";
+        $name = uniqid('oops_');
+        $code = "echo '$name'";
         eval($code);
     }
 
     private
     function E_CORE_ERROR_by_declaring_a_class_directly_implementing_Traversable()
     {
-        $code = 'class Oops implements Traversable {}';
+        $name = uniqid('oops_');
+        $code = "class $name implements Traversable {}";
         eval($code);
     }
 
@@ -579,10 +665,12 @@ class Ando_ErrorFactory
         // You can play with this code if you like, but it doesn't really work.
         // In fact, it only works inside the CLI created by exec "php...".
 
-        $filename = tempnam(sys_get_temp_dir(), 'no_extension_ini_');
-        file_put_contents($filename, 'extension=no_extension');
-        $code = "php -c $filename xxx";
+        $name     = uniqid('oops_');
+        $filename = sys_get_temp_dir() . "/$name.ini";
+        file_put_contents($filename, "extension=$name");
+        $code = "php -c $filename oops.php";
         exec($code, $output, $return);
+        unlink($filename);
     }
 
     private
@@ -595,58 +683,76 @@ class Ando_ErrorFactory
     private
     function E_COMPILE_WARNING_by_not_closing_a_multiline_comment()
     {
-        $code = '/* oops';
+        $name = uniqid('oops_');
+        $code = "/* $name";
         eval($code);
     }
 
     private
     function E_USER_ERROR_by_calling_trigger_error_with_type_e_user_error()
     {
-        trigger_error('oops', E_USER_ERROR);
+        $name = uniqid('oops_');
+        trigger_error($name, E_USER_ERROR);
     }
 
     private
     function E_USER_WARNING_by_calling_trigger_error_with_type_e_user_warning()
     {
-        trigger_error('oops', E_USER_WARNING);
+        $name = uniqid('oops_');
+        trigger_error($name, E_USER_WARNING);
     }
 
     private
     function E_USER_NOTICE_by_calling_trigger_error_with_type_e_user_notice()
     {
-        trigger_error('oops', E_USER_NOTICE);
+        $name = uniqid('oops_');
+        trigger_error($name, E_USER_NOTICE);
     }
 
     private
     function E_STRICT_by_accessing_static_property_as_non_static()
     {
-        $code = '
-        class E_STRICT_Parent {
-            function oops($a = array()) {}
-        }
-        class E_STRICT_Child extends E_STRICT_Parent {
-            function oops() {}
-        }';
+        $name = uniqid('oops_');
+        $code = "
+            class Parent_$name {
+                function oops(\$arg = array()) {}
+            }
+            class Child_$name extends Parent_$name {
+                function oops() {}
+            }
+        ";
         eval($code);
     }
 
     private
     function E_RECOVERABLE_ERROR_by_converting_to_string_an_object_of_a_class_without__to_string()
     {
-        $code = 'echo new stdClass();';
+        $name = uniqid('oops_');
+        $code = "
+            class $name{}
+            echo new $name();
+        ";
         eval($code);
     }
 
     private
     function E_DEPRECATED_by_calling_call_user_method()
     {
-        $code = 'class A {public function oops(){}} $a = new A(); call_user_method("oops", $a);';
+        $name = uniqid('oops_');
+        $code = "
+            class $name {
+                function oops(){}
+            }
+            \$oops = new $name();
+            call_user_method('oops', \$oops);
+        ";
         eval($code);
     }
 
     private
     function E_USER_DEPRECATED_by_calling_trigger_error_with_type_e_user_deprecated()
     {
-        trigger_error('oops', E_USER_DEPRECATED);
+        $name = uniqid('oops_');
+        trigger_error($name, E_USER_DEPRECATED);
     }
 }

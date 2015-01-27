@@ -325,7 +325,7 @@ class Ando_ErrorFactory
      *
      * @param int|int[] $errors
      *
-     * @return string[]
+     * @return string|string[]
      */
     public static
     function to_str( $errors )
@@ -488,41 +488,51 @@ class Ando_ErrorFactory
         return $result;
     }
 
-    // ------------------------------------------------------------------------------------------------FACTORY OF ERRORS
+    // -----------------------------------------------------------------------------------------------TRIGGERS OF ERRORS
 
+    /**
+     * Trigger E_ERROR.
+     */
     public static
     function E_ERROR()
     {
-        self::instance()
-            ->E_ERROR_by_calling_an_undefined_function();
+        eval(self::E_ERROR_code());
     }
 
+    /**
+     * Trigger E_WARNING.
+     */
     public static
     function E_WARNING()
     {
-        self::instance()
-            ->E_WARNING_by_calling_a_function_with_less_arguments();
+        eval(self::E_WARNING_code());
     }
 
+    /**
+     * Trigger E_PARSE.
+     */
     public static
     function E_PARSE()
     {
-        self::instance()
-            ->E_PARSE_by_not_using_a_semicolon();
+        eval(self::E_PARSE_code());
     }
 
+    /**
+     * Trigger E_NOTICE.
+     */
     public static
     function E_NOTICE()
     {
-        self::instance()
-            ->E_NOTICE_by_using_an_undefined_constant();
+        eval(self::E_NOTICE_code());
     }
 
+    /**
+     * Trigger E_CORE_ERROR.
+     */
     public static
     function E_CORE_ERROR()
     {
-        self::instance()
-            ->E_CORE_ERROR_by_declaring_a_class_directly_implementing_Traversable();
+        eval(self::E_CORE_ERROR_code());
     }
 
     /**
@@ -539,122 +549,169 @@ class Ando_ErrorFactory
     protected static
     function E_CORE_WARNING()
     {
-        self::instance()
-            ->no_way_to_trigger_E_CORE_WARNING_from_userland_yet();
+        eval(self::no_way_to_trigger_E_CORE_WARNING_from_userland_yet());
     }
 
+    /**
+     * Trigger E_COMPILE_ERROR.
+     */
     public static
     function E_COMPILE_ERROR()
     {
-        self::instance()
-            ->E_COMPILE_ERROR_by_declaring_a_class_called_self();
+        eval(self::E_COMPILE_ERROR_code());
     }
 
+    /**
+     * Trigger E_COMPILE_WARNING.
+     */
     public static
     function E_COMPILE_WARNING()
     {
-        self::instance()
-            ->E_COMPILE_WARNING_by_not_closing_a_multiline_comment();
+        eval(self::E_COMPILE_WARNING_code());
     }
 
+    /**
+     * Trigger E_USER_ERROR.
+     */
     public static
     function E_USER_ERROR()
     {
-        self::instance()
-            ->E_USER_ERROR_by_calling_trigger_error_with_type_e_user_error();
+        eval(self::E_USER_ERROR_code());
     }
 
+    /**
+     * Trigger E_USER_WARNING.
+     */
     public static
     function E_USER_WARNING()
     {
-        self::instance()
-            ->E_USER_WARNING_by_calling_trigger_error_with_type_e_user_warning();
+        eval(self::E_USER_WARNING_code());
     }
 
+    /**
+     * Trigger E_USER_NOTICE.
+     */
     public static
     function E_USER_NOTICE()
     {
-        self::instance()
-            ->E_USER_NOTICE_by_calling_trigger_error_with_type_e_user_notice();
+        eval(self::E_USER_NOTICE_code());
     }
 
+    /**
+     * Trigger E_STRICT.
+     */
     public static
     function E_STRICT()
     {
-        self::instance()
-            ->E_STRICT_by_accessing_static_property_as_non_static();
+        eval(self::E_STRICT_code());
     }
 
+    /**
+     * Trigger E_RECOVERABLE_ERROR.
+     */
     public static
     function E_RECOVERABLE_ERROR()
     {
-        self::instance()
-            ->E_RECOVERABLE_ERROR_by_converting_to_string_an_object_of_a_class_without__to_string();
+        eval(self::E_RECOVERABLE_ERROR_code());
     }
 
+    /**
+     * Trigger E_DEPRECATED.
+     */
     public static
     function E_DEPRECATED()
     {
-        self::instance()
-            ->E_DEPRECATED_by_calling_call_user_method();
+        eval(self::E_DEPRECATED_code());
     }
 
+    /**
+     * Trigger E_USER_DEPRECATED.
+     */
     public static
     function E_USER_DEPRECATED()
     {
-        self::instance()
-            ->E_USER_DEPRECATED_by_calling_trigger_error_with_type_e_user_deprecated();
+        eval(self::E_USER_DEPRECATED_code());
     }
 
-    //---------------------------------------------------------------------------------------------------STORE OF ERRORS
+    //--------------------------------------------------------------------------------------------------CODES FOR ERRORS
 
-
-    private
-    function E_ERROR_by_calling_an_undefined_function()
+    /**
+     * Code for E_ERROR error by calling an undefined function.
+     *
+     * @return string
+     */
+    public static
+    function E_ERROR_code()
     {
         $name = uniqid('oops_');
-        $name();
+        $result = "$name();";
+        return $result;
     }
 
-    private
-    function E_WARNING_by_calling_a_function_with_less_arguments()
+    /**
+     * Code for E_WARNING error by calling a function with less arguments.
+     *
+     * @return string
+     */
+    public static
+    function E_WARNING_code()
     {
         $name = uniqid('oops_');
-        $code = "
+        $result = "
             function $name(\$required){}
             $name();
         ";
-        eval($code);
+        return $result;
     }
 
-    private
-    function E_NOTICE_by_using_an_undefined_constant()
+    /**
+     * Code for E_NOTICE error by using an undefined constant.
+     *
+     * @return string
+     */
+    public static
+    function E_NOTICE_code()
     {
         $name = uniqid('oops_');
-        $code = "$name;";
-        eval($code);
+        $result = "$name;";
+        return $result;
     }
 
-    private
-    function E_PARSE_by_not_using_a_semicolon()
+    /**
+     * Code for E_PARSE error by not using a semicolon.
+     *
+     * @return string
+     */
+    public static
+    function E_PARSE_code()
     {
         $name = uniqid('oops_');
-        $code = "echo '$name'";
-        eval($code);
+        $result = "echo '$name'";
+        return $result;
     }
 
-    private
-    function E_CORE_ERROR_by_declaring_a_class_directly_implementing_Traversable()
+    /**
+     * Code for E_CORE_ERROR error by declaring a class directly implementing Traversable.
+     *
+     * @return string
+     */
+    public static
+    function E_CORE_ERROR_code()
     {
         $name = uniqid('oops_');
-        $code = "class $name implements Traversable {}";
-        eval($code);
+        $result = "class $name implements Traversable {}";
+        return $result;
     }
 
-    private
+    /**
+     * Missing E_CORE_WARNING code.
+     *
+     * @return string
+     */
+    protected static
     function no_way_to_trigger_E_CORE_WARNING_from_userland_yet()
     {
-        // TODO find a way to trigger E_CORE_WARNING from userland
+        // TODO Find a way to trigger E_CORE_WARNING from userland.
 
         // You can play with this code if you like, but it doesn't really work.
         // In fact, it only works inside the CLI created by exec "php...".
@@ -662,52 +719,88 @@ class Ando_ErrorFactory
         $name     = uniqid('oops_');
         $filename = sys_get_temp_dir() . "/$name.ini";
         file_put_contents($filename, "extension=$name");
-        $code = "php -c $filename oops.php";
-        exec($code, $output, $return);
+        $result = "php -c $filename oops.php";
+        exec($result, $output, $return);
         unlink($filename);
+
+        $result = '';
+        return $result;
     }
 
-    private
-    function E_COMPILE_ERROR_by_declaring_a_class_called_self()
+    /**
+     * Code for E_COMPILE_ERROR error by declaring a class called self.
+     *
+     * @return string
+     */
+    public static
+    function E_COMPILE_ERROR_code()
     {
-        $code = 'class self {}';
-        eval($code);
+        $result = 'class self {}';
+        return $result;
     }
 
-    private
-    function E_COMPILE_WARNING_by_not_closing_a_multiline_comment()
-    {
-        $name = uniqid('oops_');
-        $code = "/* $name";
-        eval($code);
-    }
-
-    private
-    function E_USER_ERROR_by_calling_trigger_error_with_type_e_user_error()
-    {
-        $name = uniqid('oops_');
-        trigger_error($name, E_USER_ERROR);
-    }
-
-    private
-    function E_USER_WARNING_by_calling_trigger_error_with_type_e_user_warning()
+    /**
+     * Code for E_COMPILE_WARNING error by not closing a multiline comment.
+     *
+     * @return string
+     */
+    public static
+    function E_COMPILE_WARNING_code()
     {
         $name = uniqid('oops_');
-        trigger_error($name, E_USER_WARNING);
+        $result = "/* $name";
+        return $result;
     }
 
-    private
-    function E_USER_NOTICE_by_calling_trigger_error_with_type_e_user_notice()
+    /**
+     * Code for E_USER_ERROR error by calling trigger_error with type E_USER_ERROR.
+     *
+     * @return string
+     */
+    public static
+    function E_USER_ERROR_code()
     {
         $name = uniqid('oops_');
-        trigger_error($name, E_USER_NOTICE);
+        $result = "trigger_error('$name', E_USER_ERROR);";
+        return $result;
     }
 
-    private
-    function E_STRICT_by_accessing_static_property_as_non_static()
+    /**
+     * Code for E_USER_WARNING error by calling trigger_error with type E_USER_WARNING.
+     *
+     * @return string
+     */
+    public static
+    function E_USER_WARNING_code()
     {
         $name = uniqid('oops_');
-        $code = "
+        $result = "trigger_error('$name', E_USER_WARNING);";
+        return $result;
+    }
+
+    /**
+     * Code for E_USER_NOTICE error by calling trigger_error with type E_USER_NOTICE.
+     *
+     * @return string
+     */
+    public static
+    function E_USER_NOTICE_code()
+    {
+        $name = uniqid('oops_');
+        $result = "trigger_error('$name', E_USER_NOTICE);";
+        return $result;
+    }
+
+    /**
+     * Code for E_STRICT error by accessing static property as non static.
+     *
+     * @return string
+     */
+    public static
+    function E_STRICT_code()
+    {
+        $name = uniqid('oops_');
+        $result = "
             class Parent_$name {
                 function oops(\$arg = array()) {}
             }
@@ -715,38 +808,54 @@ class Ando_ErrorFactory
                 function oops() {}
             }
         ";
-        eval($code);
+        return $result;
     }
 
-    private
-    function E_RECOVERABLE_ERROR_by_converting_to_string_an_object_of_a_class_without__to_string()
+    /**
+     * Code for E_RECOVERABLE_ERROR error by converting to string an object of a class without __toString.
+     *
+     * @return string
+     */
+    public static
+    function E_RECOVERABLE_ERROR_code()
     {
         $name = uniqid('oops_');
-        $code = "
+        $result = "
             class $name{}
             echo new $name();
         ";
-        eval($code);
+        return $result;
     }
 
-    private
-    function E_DEPRECATED_by_calling_call_user_method()
+    /**
+     * Code for E_DEPRECATED error by calling call_user_method.
+     *
+     * @return string
+     */
+    public static
+    function E_DEPRECATED_code()
     {
         $name = uniqid('oops_');
-        $code = "
+        $result = "
             class $name {
                 function oops(){}
             }
             \$oops = new $name();
             call_user_method('oops', \$oops);
         ";
-        eval($code);
+        return $result;
     }
 
-    private
-    function E_USER_DEPRECATED_by_calling_trigger_error_with_type_e_user_deprecated()
+    /**
+     * Code for E_USER_DEPRECATED error by calling trigger_error with type E_USER_DEPRECATED.
+     *
+     * @return string
+     */
+    public static
+    function E_USER_DEPRECATED_code()
     {
         $name = uniqid('oops_');
-        trigger_error($name, E_USER_DEPRECATED);
+        $result = "trigger_error('$name', E_USER_DEPRECATED);";
+        return $result;
     }
 }
